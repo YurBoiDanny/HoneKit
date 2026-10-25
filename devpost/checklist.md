@@ -19,7 +19,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Open `localhost:8080`, look at the crew list and your own bag. Does the empty bag read as an invitation rather than a broken screen, and is this the app you pictured?
   Commit: `Add walking skeleton: empty bag served from generated compose`
 
-- [ ] **2. You can answer a card and finish a deck**
+- [x] **2. You can answer a card and finish a deck**
   Becomes usable: The Camera Foundations deck opens; image-based fill-in-the-blank cards are answered by tapping a word choice. A wrong answer says "Not quite — try again", shows the explanation and the reason for the picked choice (unless reveal is turned off from the gear button), and comes back two cards later. Finishing shows a score and pass/fail at 80%.
   Why now: First real behavior crossing Content → Progress → frontend. Sessions, grading, requeue and the member's own setting get proven before any visual payoff depends on them, and a deck that passes is what makes a tool earnable in the next slice.
   PRD ref: `prd.md > The member loop` (fill-in-the-blank, right/wrong, reveal toggle, spaced repetition, deck completion), `prd.md > States and Boundaries` (wrong-answer, explanation, deck complete/early exit)
@@ -133,3 +133,4 @@ Activity mode:
 ## Revisions
 
 - Frontend published as a hand-written nginx image instead of `PublishAsStaticWebsite` — the Aspire static-website publisher reverse-proxies only one backend, and this app has five services the browser must reach. The spec's documented fallback applies: only the frontend is ejected; the five .NET services still come from the generated compose, and the AppHost stays the single model.
+- A completed deck grants its tool even when first-try accuracy is below the 80% pass line — otherwise the scripted one-wrong run on a four-card deck (75%) could never produce the tool drop the demo depends on. Pass stays the quality label, honed stays ≥90%, and leaving early grants nothing.

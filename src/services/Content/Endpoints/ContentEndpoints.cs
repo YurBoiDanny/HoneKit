@@ -92,6 +92,23 @@ public static class ContentEndpoints
             return card is null ? TypedResults.NotFound() : TypedResults.Ok(ToDto(card));
         });
 
+        // The grading payload. Only Progress calls this; the correct choice never rides on CardDto.
+        api.MapGet("/cards/{id}/answer", async Task<Results<Ok<CardAnswerDto>, NotFound>> (
+            string id, ContentDbContext db, CancellationToken ct) =>
+        {
+            var card = await db.Cards.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id, ct);
+            if (card is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            return TypedResults.Ok(new CardAnswerDto(
+                card.Id,
+                card.CorrectChoiceId,
+                card.Explanation,
+                ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>())));
+        });
+
         return app;
     }
 

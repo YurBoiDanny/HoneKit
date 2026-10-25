@@ -46,6 +46,49 @@ public sealed record BagDto(
     string Colour,
     string Style,
     bool Worn,
-    IReadOnlyList<EarnedToolDto> Tools);
+    IReadOnlyList<EarnedToolDto> Tools,
+    bool ShowAnswerOnWrong);
 
 public sealed record CompletionsDto(string MemberId, IReadOnlyList<string> LessonIds);
+
+public sealed record PreferencesRequest(bool ShowAnswerOnWrong);
+
+// ---- the member loop -------------------------------------------------------------------
+
+public sealed record StartSessionRequest(string MemberId, string DeckId);
+
+public sealed record SessionDto(string Id, string MemberId, string DeckId, int TotalCards, int Remaining);
+
+public sealed record NextCardDto(string? CardId, int Remaining);
+
+public sealed record AttemptRequest(string CardId, string Answer);
+
+// Grading data, fetched by Progress. Kept off CardDto so the card payload the browser
+// receives does not carry the answer.
+public sealed record CardAnswerDto(
+    string CardId,
+    string? CorrectChoiceId,
+    string Explanation,
+    IReadOnlyDictionary<string, string> WrongReasons);
+
+public sealed record AttemptResultDto(
+    bool Correct,
+    string? CorrectChoiceId,
+    string? Explanation,
+    string? WrongReason,
+    int? RequeuedAfter,
+    DateTimeOffset DueAt,
+    int Remaining);
+
+public sealed record FinishSessionRequest(bool ExitedEarly);
+
+public sealed record SessionResultDto(
+    string SessionId,
+    int FirstTryCorrect,
+    int TotalCards,
+    double ScorePercent,
+    bool Passed,
+    bool Honed,
+    bool ToolGranted,
+    string SkillId,
+    string SkillName);

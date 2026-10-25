@@ -25,7 +25,9 @@ var content = builder.AddProject<Projects.HoneKit_Content>("content", launchProf
 
 var progress = builder.AddProject<Projects.HoneKit_Progress>("progress", launchProfileName: "http")
     .WithVolume("progress-data", target: "/home/app", env: "DATA_DIR")
-    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform);
+    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform)
+    .WithReference(content)
+    .WaitFor(content);
 
 var roster = builder.AddProject<Projects.HoneKit_Roster>("roster", launchProfileName: "http")
     .WithVolume("roster-data", target: "/home/app", env: "DATA_DIR")

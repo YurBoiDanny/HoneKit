@@ -3,6 +3,16 @@
 // Do not edit. Run `npm run gen:contracts` in src/frontend after changing a contract.
 // </auto-generated>
 
+export interface AttemptResultDto {
+  correct: boolean;
+  correctChoiceId: string | null;
+  explanation: string | null;
+  wrongReason: string | null;
+  requeuedAfter: number | null;
+  dueAt: string;
+  remaining: number;
+}
+
 export interface BagDto {
   memberId: string;
   name: string;
@@ -10,6 +20,14 @@ export interface BagDto {
   style: string;
   worn: boolean;
   tools: EarnedToolDto[];
+  showAnswerOnWrong: boolean;
+}
+
+export interface CardAnswerDto {
+  cardId: string;
+  correctChoiceId: string | null;
+  explanation: string;
+  wrongReasons: Record<string, string>;
 }
 
 export interface CardDto {
@@ -68,11 +86,36 @@ export interface MemberDto {
   lastActiveAt: string | null;
 }
 
+export interface NextCardDto {
+  cardId: string | null;
+  remaining: number;
+}
+
 export interface RectDto {
   x: number;
   y: number;
   width: number;
   height: number;
+}
+
+export interface SessionDto {
+  id: string;
+  memberId: string;
+  deckId: string;
+  totalCards: number;
+  remaining: number;
+}
+
+export interface SessionResultDto {
+  sessionId: string;
+  firstTryCorrect: number;
+  totalCards: number;
+  scorePercent: number;
+  passed: boolean;
+  honed: boolean;
+  toolGranted: boolean;
+  skillId: string;
+  skillName: string;
 }
 
 export interface SkillDto {

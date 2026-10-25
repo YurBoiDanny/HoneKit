@@ -1,14 +1,17 @@
+import type { EarnedToolDto } from '../api/types';
+
 type BagArtProps = {
   colour: string;
   worn?: boolean;
   label: string;
+  tools: EarnedToolDto[];
 };
 
 /**
  * The bag, drawn as layered SVG so a colour change is a token change.
  * Empty bag for the walking skeleton; tools and patches land in later slices.
  */
-export function BagArt({ colour, worn = false, label }: BagArtProps) {
+export function BagArt({ colour, worn = false, label, tools }: BagArtProps) {
   return (
     <svg
       className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''}`}
@@ -82,27 +85,65 @@ export function BagArt({ colour, worn = false, label }: BagArtProps) {
       <path d="M84 316 C88 330 92 344 92 362" fill="none" stroke="var(--ink)" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="4 6" />
       <path d="M376 316 C372 330 368 344 368 362" fill="none" stroke="var(--ink)" strokeOpacity="0.2" strokeWidth="2" strokeDasharray="4 6" />
 
-      {/* patch sockets — one per skill, waiting to be earned */}
-      {[
-        [148, 356],
-        [238, 356],
-        [148, 414],
-        [238, 414],
-      ].map(([x, y]) => (
-        <rect
-          key={`${x}-${y}`}
-          x={x}
-          y={y}
-          width="68"
-          height="46"
-          rx="8"
-          fill="none"
-          stroke="var(--ink)"
-          strokeOpacity="0.2"
-          strokeWidth="2"
-          strokeDasharray="4 6"
-        />
-      ))}
+      {/* patch sockets — one per skill; earned skills are sewn in */}
+      {Array.from({ length: 4 }, (_, index) => {
+        const x = index % 2 === 0 ? 148 : 238;
+        const y = index < 2 ? 356 : 414;
+        const tool = tools[index];
+        const tilt = index % 2 === 0 ? -1.5 : 1.5;
+
+        return tool ? (
+          <g key={tool.skillId} transform={`rotate(${tilt} ${x + 34} ${y + 23})`}>
+            <rect
+              x={x}
+              y={y}
+              width="68"
+              height="46"
+              rx="8"
+              fill={tool.honed ? 'var(--teal)' : 'var(--butter)'}
+              stroke="var(--ink)"
+              strokeOpacity="0.35"
+              strokeWidth="2"
+            />
+            <rect
+              x={x + 5}
+              y={y + 5}
+              width="58"
+              height="36"
+              rx="5"
+              fill="none"
+              stroke={tool.honed ? 'var(--paper)' : 'var(--ink)'}
+              strokeOpacity="0.35"
+              strokeWidth="1.5"
+              strokeDasharray="3 3"
+            />
+            <text
+              x={x + 34}
+              y={y + 28}
+              textAnchor="middle"
+              fontFamily="Inter, sans-serif"
+              fontSize="11"
+              fill={tool.honed ? 'var(--paper)' : 'var(--ink)'}
+            >
+              {tool.name}
+            </text>
+          </g>
+        ) : (
+          <rect
+            key={`empty-${index}`}
+            x={x}
+            y={y}
+            width="68"
+            height="46"
+            rx="8"
+            fill="none"
+            stroke="var(--ink)"
+            strokeOpacity="0.2"
+            strokeWidth="2"
+            strokeDasharray="4 6"
+          />
+        );
+      })}
 
       {/* base stitch */}
       <path d="M136 476 L324 476" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="2" strokeDasharray="5 7" />

@@ -35,6 +35,9 @@ services:
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${PROGRESS_PORT}"
       DATA_DIR: "/home/app"
+      CONTENT_HTTP: "http://content:${CONTENT_PORT}"
+      services__content__http__0: "http://content:${CONTENT_PORT}"
+      CONTENT_HTTPS: "https://content:${CONTENT_PORT}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "progress"
@@ -45,6 +48,9 @@ services:
         target: "/home/app"
         source: "progress-data"
         read_only: false
+    depends_on:
+      content:
+        condition: "service_started"
     networks:
       - "aspire"
   roster:

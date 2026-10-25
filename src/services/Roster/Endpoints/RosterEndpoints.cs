@@ -114,7 +114,24 @@ public static class RosterEndpoints
                 member.Colour,
                 member.Style,
                 member.Worn,
-                tools));
+                tools,
+                member.ShowAnswerOnWrong));
+        });
+
+        // No auth in the POC: the demo member edits their own preference, but nothing is secret.
+        api.MapPatch("/members/{id}/preferences", async Task<Results<NoContent, NotFound>> (
+            string id, PreferencesRequest request, RosterDbContext db, CancellationToken ct) =>
+        {
+            var member = await db.Members.FirstOrDefaultAsync(m => m.Id == id, ct);
+            if (member is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            member.ShowAnswerOnWrong = request.ShowAnswerOnWrong;
+            await db.SaveChangesAsync(ct);
+
+            return TypedResults.NoContent();
         });
 
         return app;

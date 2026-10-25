@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BagArt } from '../components/BagArt';
-import { DEMO_MEMBER_ID, DEMO_ROLE, fetchBag, fetchTeam } from '../api/client';
+import { DEMO_MEMBER_ID, DEMO_ROLE, fetchBag, fetchDecks, fetchTeam } from '../api/client';
 import type { MemberDto } from '../api/types';
 
 function quietFor(member: MemberDto): string | null {
@@ -24,6 +25,10 @@ function memberStyle(member: MemberDto): CSSProperties {
 export function BagScreen() {
   const team = useQuery({ queryKey: ['team', DEMO_ROLE], queryFn: () => fetchTeam(DEMO_ROLE) });
   const bag = useQuery({ queryKey: ['bag', DEMO_MEMBER_ID], queryFn: () => fetchBag(DEMO_MEMBER_ID) });
+  const decks = useQuery({ queryKey: ['decks', DEMO_ROLE], queryFn: () => fetchDecks(DEMO_ROLE) });
+
+  const deck = decks.data?.[0];
+  const tools = bag.data?.tools ?? [];
 
   return (
     <>
@@ -43,8 +48,8 @@ export function BagScreen() {
             </div>
           ) : bag.isError ? (
             <div className="state state--error" role="alert">
-              <h2>Your bag didn't open.</h2>
-              <p>The roster service didn't answer. It may still be starting.</p>
+              <h2>Your bag didn&apos;t open.</h2>
+              <p>The roster service didn&apos;t answer. It may still be starting.</p>
               <button type="button" onClick={() => bag.refetch()}>
                 Try again
               </button>
@@ -55,17 +60,33 @@ export function BagScreen() {
                 <BagArt
                   colour={bag.data.colour}
                   worn={bag.data.worn}
-                  label={`${bag.data.name}'s camera bag, empty`}
+                  tools={tools}
+                  label={
+                    tools.length === 0
+                      ? `${bag.data.name}'s camera bag, empty`
+                      : `${bag.data.name}'s camera bag, ${tools.map((tool) => tool.name).join(', ')} earned`
+                  }
                 />
               </figure>
 
               <div className="bag-caption">
-                <h2 id="bag-heading">Nothing in it yet.</h2>
+                <h2 id="bag-heading">
+                  {tools.length === 0
+                    ? 'Nothing in it yet.'
+                    : tools.length === 1
+                      ? `${tools[0].name} is in the bag.`
+                      : `${tools.length} tools in the bag.`}
+                </h2>
                 <p>
-                  The Camera Foundations deck is what puts the first tool in. Finish it well and
-                  the tool arrives honed.
+                  {tools.length === 0
+                    ? 'The Camera Foundations deck is what puts the first tool in.'
+                    : `Earned: ${tools.map((tool) => tool.name).join(', ')}. Running the deck again is how you keep them sharp.`}
                 </p>
-                <p className="deck-hint">Camera Foundations, four cards</p>
+                {deck && (
+                  <Link className="button-primary" to={`/deck/${deck.id}`}>
+                    {tools.length === 0 ? `Start ${deck.name}` : `Run ${deck.name} again`}
+                  </Link>
+                )}
               </div>
             </>
           )}
