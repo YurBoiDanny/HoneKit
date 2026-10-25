@@ -1,0 +1,148 @@
+services:
+  compose-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:13.6"
+    ports:
+      - "18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  content:
+    image: "${CONTENT_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${CONTENT_PORT}"
+      DATA_DIR: "/home/app"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "content"
+    expose:
+      - "${CONTENT_PORT}"
+    volumes:
+      - type: "volume"
+        target: "/home/app"
+        source: "content-data"
+        read_only: false
+    networks:
+      - "aspire"
+  progress:
+    image: "${PROGRESS_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${PROGRESS_PORT}"
+      DATA_DIR: "/home/app"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "progress"
+    expose:
+      - "${PROGRESS_PORT}"
+    volumes:
+      - type: "volume"
+        target: "/home/app"
+        source: "progress-data"
+        read_only: false
+    networks:
+      - "aspire"
+  roster:
+    image: "${ROSTER_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${ROSTER_PORT}"
+      DATA_DIR: "/home/app"
+      CONTENT_HTTP: "http://content:${CONTENT_PORT}"
+      services__content__http__0: "http://content:${CONTENT_PORT}"
+      CONTENT_HTTPS: "https://content:${CONTENT_PORT}"
+      PROGRESS_HTTP: "http://progress:${PROGRESS_PORT}"
+      services__progress__http__0: "http://progress:${PROGRESS_PORT}"
+      PROGRESS_HTTPS: "https://progress:${PROGRESS_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "roster"
+    expose:
+      - "${ROSTER_PORT}"
+    volumes:
+      - type: "volume"
+        target: "/home/app"
+        source: "roster-data"
+        read_only: false
+    depends_on:
+      content:
+        condition: "service_started"
+      progress:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  requirements:
+    image: "${REQUIREMENTS_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${REQUIREMENTS_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "requirements"
+    expose:
+      - "${REQUIREMENTS_PORT}"
+    networks:
+      - "aspire"
+  recommendations:
+    image: "${RECOMMENDATIONS_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${RECOMMENDATIONS_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "recommendations"
+    expose:
+      - "${RECOMMENDATIONS_PORT}"
+    networks:
+      - "aspire"
+  frontend:
+    image: "${FRONTEND_IMAGE}"
+    environment:
+      CONTENT_HTTP: "http://content:${CONTENT_PORT}"
+      services__content__http__0: "http://content:${CONTENT_PORT}"
+      CONTENT_HTTPS: "https://content:${CONTENT_PORT}"
+      PROGRESS_HTTP: "http://progress:${PROGRESS_PORT}"
+      services__progress__http__0: "http://progress:${PROGRESS_PORT}"
+      PROGRESS_HTTPS: "https://progress:${PROGRESS_PORT}"
+      ROSTER_HTTP: "http://roster:${ROSTER_PORT}"
+      services__roster__http__0: "http://roster:${ROSTER_PORT}"
+      ROSTER_HTTPS: "https://roster:${ROSTER_PORT}"
+      REQUIREMENTS_HTTP: "http://requirements:${REQUIREMENTS_PORT}"
+      services__requirements__http__0: "http://requirements:${REQUIREMENTS_PORT}"
+      REQUIREMENTS_HTTPS: "https://requirements:${REQUIREMENTS_PORT}"
+      RECOMMENDATIONS_HTTP: "http://recommendations:${RECOMMENDATIONS_PORT}"
+      services__recommendations__http__0: "http://recommendations:${RECOMMENDATIONS_PORT}"
+      RECOMMENDATIONS_HTTPS: "https://recommendations:${RECOMMENDATIONS_PORT}"
+    ports:
+      - "8080:80"
+    depends_on:
+      content:
+        condition: "service_started"
+      progress:
+        condition: "service_started"
+      roster:
+        condition: "service_started"
+      requirements:
+        condition: "service_started"
+      recommendations:
+        condition: "service_started"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"
+volumes:
+  content-data:
+    driver: "local"
+  progress-data:
+    driver: "local"
+  roster-data:
+    driver: "local"

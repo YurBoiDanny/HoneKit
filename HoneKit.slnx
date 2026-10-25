@@ -1,0 +1,26 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/HoneKit.AppHost/HoneKit.AppHost.csproj" />
+    <Project Path="src/HoneKit.Contracts/HoneKit.Contracts.csproj" />
+    <Project Path="src/HoneKit.ServiceDefaults/HoneKit.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/src/services/" />
+  <Folder Name="/src/services/Content/">
+    <Project Path="src/services/Content/HoneKit.Content.csproj" />
+  </Folder>
+  <Folder Name="/src/services/Progress/">
+    <Project Path="src/services/Progress/HoneKit.Progress.csproj" />
+  </Folder>
+  <Folder Name="/src/services/Recommendations/">
+    <Project Path="src/services/Recommendations/HoneKit.Recommendations.csproj" />
+  </Folder>
+  <Folder Name="/src/services/Requirements/">
+    <Project Path="src/services/Requirements/HoneKit.Requirements.csproj" />
+  </Folder>
+  <Folder Name="/src/services/Roster/">
+    <Project Path="src/services/Roster/HoneKit.Roster.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/HoneKit.ContractGen/HoneKit.ContractGen.csproj" />
+  </Folder>
+</Solution>

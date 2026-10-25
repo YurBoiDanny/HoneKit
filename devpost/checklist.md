@@ -5,11 +5,11 @@ status: approved
 
 # Build Checklist
 
-Build mode: to be chosen before slice 1 — learn or fast.
+Build mode: fast (chosen before slice 1; learner checks at the planned checkpoints).
 
 ## Slices
 
-- [ ] **1. Your empty bag, served from the real stack**
+- [x] **1. Your empty bag, served from the real stack**
   Becomes usable: `docker compose up` brings up the published stack; `http://localhost:8080` shows the seeded crew roster and your own empty bag, with skills, lessons and members each read from a separate service. The app lands on the member's bag for now; the leader home arrives in slice 6.
   Why now: Bootstrapping lives inside the first usable slice, and it settles the build's two real unknowns while there is almost nothing to break — which Aspire 13.6 project model the installed template emits (`AddProject` vs `AddDotnetProject`), and whether the experimental Vite publish path lands in generated compose. It also puts the kernel on screen first, even empty.
   PRD ref: `prd.md > The Core Journey` (steps 4–5, the empty bag), `prd.md > Screens and Layout` (My bag), `prd.md > States and Boundaries` (first use)
@@ -131,3 +131,5 @@ Reflection:
 Activity mode:
 
 ## Revisions
+
+- Frontend published as a hand-written nginx image instead of `PublishAsStaticWebsite` — the Aspire static-website publisher reverse-proxies only one backend, and this app has five services the browser must reach. The spec's documented fallback applies: only the frontend is ejected; the five .NET services still come from the generated compose, and the AppHost stays the single model.
