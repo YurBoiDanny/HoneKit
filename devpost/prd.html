@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HoneKit — Product Requirements (companion)</title>
+<style>
+  :root{
+    --cream:#FBF6EC;
+    --cream-2:#F4EAD8;
+    --card:#FFFDF7;
+    --ink:#3B322A;
+    --ink-soft:#6B5E50;
+    --line:#E4D6BE;
+    --gold:#D89A3C;
+    --gold-soft:#F0D9A8;
+    --sage:#7C9A6D;
+    --sage-deep:#4F6B41;
+    --terra:#C26A44;
+    --sky:#7FA6BC;
+    --patch:#B5533C;
+    --shadow:0 1px 2px rgba(59,50,42,.06),0 8px 24px rgba(59,50,42,.08);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:
+      radial-gradient(1200px 600px at 80% -10%, #FCEFD6 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 20%, #EAF1E3 0%, transparent 55%),
+      var(--cream);
+    color:var(--ink);
+    font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{font-family:Georgia,"Iowan Old Style",Cambria,"Times New Roman",serif;line-height:1.2;margin:0 0 .4em}
+  a{color:var(--sage-deep)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
+  header.hero{padding:52px 0 26px}
+  .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:12px;font-weight:700;color:var(--terra)}
+  .hero h1{font-size:clamp(40px,7vw,68px);margin:.1em 0 .12em;letter-spacing:-.01em}
+  .hero .sub{font-size:clamp(17px,2.4vw,21px);color:var(--ink-soft);max-width:60ch}
+  .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+  .badge{font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--cream-2);border:1px solid var(--line);color:var(--ink-soft)}
+  .badge.draft{background:#FDECCF;border-color:#F0D09A;color:#8A5A14}
+  .badge.approved{background:#E4EEDC;border-color:#CBDCB8;color:#4F6B41}
+  nav.section-nav{position:sticky;top:0;z-index:30;background:rgba(251,246,236,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin-top:6px}
+  nav.section-nav .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:10px;padding-bottom:10px}
+  nav.section-nav a{white-space:nowrap;text-decoration:none;color:var(--ink-soft);font-size:13.5px;font-weight:600;padding:6px 12px;border-radius:999px}
+  nav.section-nav a:hover{background:var(--cream-2);color:var(--ink)}
+  section{padding:44px 0 8px}
+  section > .wrap > h2{font-size:clamp(26px,3.6vw,34px);margin-bottom:.2em}
+  section > .wrap > .lede{color:var(--ink-soft);max-width:70ch;margin-bottom:22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+  .pad{padding:20px 22px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+  .muted{color:var(--ink-soft)}
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px}
+  .tag.in{background:#E4EEDC;color:var(--sage-deep)}
+  .tag.out{background:#F3E3D9;color:#93502F}
+  .tag.dial{background:#E6EEF3;color:#42647A}
+
+  /* ---- two sides diagram ---- */
+  .sides{display:grid;gap:14px;align-items:stretch}
+  @media(min-width:800px){.sides{grid-template-columns:1fr 120px 1fr}}
+  .side{border-radius:var(--r);padding:19px 20px;border:1px solid var(--line);background:var(--card)}
+  .side.member{background:linear-gradient(180deg,#FFFDF7, #FBF3E2)}
+  .side.leader{background:linear-gradient(180deg,#FFFDF7, #EEF3E8)}
+  .side h3{font-size:20px;margin-bottom:.35em}
+  .side ul{margin:0;padding-left:18px}
+  .side li{margin:.28em 0}
+  .side .role{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft)}
+  .bridge{display:flex;align-items:center;justify-content:center;gap:8px;color:var(--ink-soft);font-weight:700;font-size:13px;text-align:center}
+  .bridge svg{width:34px;height:34px}
+  @media(max-width:799px){.bridge{flex-direction:column}}
+
+  /* ---- stepper ---- */
+  .stepper{display:grid;gap:18px}
+  @media(min-width:860px){.stepper{grid-template-columns:320px 1fr;align-items:start}}
+  .steps{display:flex;flex-direction:column;gap:6px}
+  button.step{
+    display:flex;gap:12px;align-items:flex-start;text-align:left;cursor:pointer;
+    background:transparent;border:1px solid transparent;border-radius:12px;padding:10px 12px;color:var(--ink);
+    font:inherit;
+  }
+  button.step:hover{background:var(--cream-2)}
+  button.step[aria-selected="true"]{background:var(--card);border-color:var(--line);box-shadow:var(--shadow)}
+  .stepnum{flex:0 0 26px;height:26px;border-radius:50%;background:var(--cream-2);border:1px solid var(--line);display:grid;place-items:center;font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:2px}
+  button.step[aria-selected="true"] .stepnum{background:var(--gold);border-color:var(--gold);color:#fff}
+  .step .stitle{font-weight:600;font-size:15px}
+  .step .ssub{font-size:12.5px;color:var(--ink-soft)}
+  .panel{min-height:280px}
+  .panel .phead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+  .panel h3{font-size:23px;margin-bottom:.15em}
+  .pnav{display:flex;gap:8px}
+  .btn{cursor:pointer;font:inherit;font-weight:600;font-size:14px;border:1px solid var(--line);background:var(--cream-2);color:var(--ink);border-radius:10px;padding:7px 13px}
+  .btn:hover{background:var(--gold-soft);border-color:var(--gold)}
+  .btn.primary{background:var(--sage);border-color:var(--sage-deep);color:#fff}
+  .fields{display:grid;gap:10px;margin-top:14px}
+  @media(min-width:620px){.fields{grid-template-columns:1fr 1fr}}
+  .field{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#FFFDF9}
+  .field .k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--terra);margin-bottom:3px}
+  .field.crit{background:#F1F6EC;border-color:#D7E3C9}
+  .field.crit .k{color:var(--sage-deep)}
+  .dots{display:flex;gap:6px;margin-top:16px;flex-wrap:wrap}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);border:none;cursor:pointer;padding:0}
+  .dot[aria-current="true"]{background:var(--gold);transform:scale(1.25)}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{cursor:pointer;font:inherit;font-weight:600;border:1px solid var(--line);background:var(--cream-2);border-radius:999px;padding:7px 15px;color:var(--ink-soft)}
+  .tab[aria-selected="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tabpane[hidden]{display:none}
+
+  /* ---- bag visuals ---- */
+  .bags{display:grid;gap:16px}
+  @media(min-width:720px){.bags{grid-template-columns:repeat(3,1fr)}}
+  .bagbox{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:14px;text-align:center;box-shadow:var(--shadow)}
+  .bagbox svg{width:100%;height:auto;display:block}
+  .bagbox h4{margin:.5em 0 .15em;font-size:16px}
+  .bagbox p{margin:.1em 0 0;font-size:13.5px;color:var(--ink-soft)}
+
+  /* ---- lists ---- */
+  .checklist{list-style:none;margin:0;padding:0}
+  .checklist li{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .checklist li:last-child{border-bottom:none}
+  .checklist li::before{content:"";flex:0 0 8px;height:8px;margin-top:8px;border-radius:50%;background:var(--gold)}
+  .checklist.deferred li::before{background:var(--line)}
+  .pill-list{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none}
+  .pill-list li{background:var(--cream-2);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13.5px}
+  .decision{padding:12px 0;border-bottom:1px dashed var(--line)}
+  .decision:last-child{border-bottom:none}
+  .decision b{color:var(--ink)}
+  .decision span{display:block;color:var(--ink-soft);font-size:14px}
+  footer{padding:44px 0 70px;color:var(--ink-soft);font-size:13.5px}
+  .note{border-left:3px solid var(--gold);padding:2px 0 2px 14px;color:var(--ink-soft);margin-top:10px;font-size:14.5px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Product Requirements · Companion</div>
+    <h1>HoneKit</h1>
+    <p class="sub">A flashcard app for the church's production crew, where the skills you prove show up
+      as tools and patches in a bag you carry — and can show off.</p>
+    <div class="badges">
+      <span class="badge approved">status: approved</span>
+      <span class="badge">Source · scope.md</span>
+      <span class="badge">One role: Camera</span>
+      <span class="badge">Both sides demoed</span>
+    </div>
+    <p class="note">“Hone” is the app's own verb — you <em>hone</em>, a session is a <em>honing</em>, a
+      tool arrives <em>honed</em>. Markdown in the repo is the source of truth; this companion is additive.</p>
+    <p class="note" style="border-left-color:var(--terra)"><b>Amended in 4-spec:</b> leader meeting
+      planning — document upload, AI-parsed requirements, and recommendations — was brought into
+      the proof of concept with the learner's approval. See <a href="#plan">Meeting plan</a>.</p>
+  </div>
+</header>
+
+<nav class="section-nav">
+  <div class="wrap">
+    <a href="#journey">Core journey</a>
+    <a href="#sides">Two sides, one bag</a>
+    <a href="#screens">Screens</a>
+    <a href="#cards">Cards</a>
+    <a href="#bags">The bag</a>
+    <a href="#plan">Meeting plan</a>
+    <a href="#states">States</a>
+    <a href="#scope">Building / deferred</a>
+    <a href="#decisions">Decisions</a>
+    <a href="#open">Open questions</a>
+  </div>
+</nav>
+
+<!-- ================= JOURNEY ================= -->
+<section id="journey">
+  <div class="wrap">
+    <h2>The core journey</h2>
+    <p class="lede">The demo person is <b>both</b> a camera operator and the Camera team lead, so the
+      demo moves between the two sides without losing their bag. Step through it — each stage shows
+      what they see, what they do, the state it lives in, and the criterion that proves it works.</p>
+
+    <div class="stepper">
+      <div class="steps" id="steps" role="tablist" aria-label="Journey steps"></div>
+      <div class="card pad">
+        <div class="panel" id="panel"></div>
+        <div class="dots" id="dots" aria-label="Step indicator"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TWO SIDES ================= -->
+<section id="sides">
+  <div class="wrap">
+    <h2>Two sides, one bag</h2>
+    <p class="lede">You sit on both sides of this. The member side proves a bag can fill from earned
+      competency; the leader side proves one big bag can read the whole crew's health.</p>
+    <div class="sides">
+      <div class="side member">
+        <div class="role">The member loop</div>
+        <h3>Your bag, filling</h3>
+        <ul>
+          <li>Own bag starts <b>empty</b>.</li>
+          <li>Answer the Camera deck — fill-in-the-blank and a framing scenario.</li>
+          <li>Right answer → the bag <b>reacts</b>; wrong → <em>not quite, try again</em>, answer shown, card returns later.</li>
+          <li>Finish the deck → a tool drops in when you return home, <b>plain or honed</b>.</li>
+          <li>Personalize — colour and style. Peek at a teammate's.</li>
+        </ul>
+      </div>
+      <div class="bridge" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8A7A66" stroke-width="1.6" stroke-linecap="round"><path d="M4 12h14"/><path d="M13 7l5 5-5 5"/><path d="M20 12h0"/><path d="M4 8v8"/></svg>
+        <span>same<br>bag</span>
+      </div>
+      <div class="side leader">
+        <div class="role">The leader's view</div>
+        <h3>The crew's health</h3>
+        <ul>
+          <li>Land on the <b>team bag</b> — the aggregate health read.</li>
+          <li>Fill is <b>proportional</b>: solid where the team's at level, empty outline where not.</li>
+          <li>Open it to the <b>bag wall</b> — members side by side, one visibly worn.</li>
+          <li>Roster = everyone whose primary <b>or</b> secondary role is Camera.</li>
+          <li>Read-only. Switch back to your own bag.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCREENS ================= -->
+<section id="screens">
+  <div class="wrap">
+    <h2>Screens and layout</h2>
+    <p class="lede">You're greeted as a lead, because you are one. A member with no lead role lands on
+      their own bag. <span class="tag dial">Assumption — verify in build</span></p>
+    <div class="grid three">
+      <div class="card pad"><h3>Team bag</h3><p class="muted">Leader home. Team name up top, roster below, the big aggregate bag centre. No dashboard strip, no health bar — the bag says it.</p></div>
+      <div class="card pad"><h3>Bag wall</h3><p class="muted">Opening the team bag unzips it into members' bags, side by side. Read-only.</p></div>
+      <div class="card pad"><h3>My bag</h3><p class="muted">Your own bag: empty → full, personalizable. This is what the leader view switches to.</p></div>
+      <div class="card pad"><h3>Teammate's bag</h3><p class="muted">Read-only — shows <em>their</em> colour and style, not the default.</p></div>
+      <div class="card pad"><h3>Card player &amp; result</h3><p class="muted">Answer one card at a time; close on a score / pass.</p></div>
+      <div class="card pad"><h3>Deck authoring</h3><p class="muted">Create a deck, add the two card types (with the right answer's explanation and a reason per wrong choice), assign it. The smallest editor that proves a leader can push content.</p></div>
+      <div class="card pad"><h3>Meeting plan</h3><p class="muted">Upload the brief → editable parsed requirements → a strategy → ranked crew with reasons → hand-picked overrides with warnings → a saved plan whose gaps become assignments.</p></div>
+    </div>
+    <p class="lede" style="margin-top:16px"><b>Bottom nav:</b> Bag view · Deck building · Settings · Profile.
+      <br><b>Responsive by design:</b> one interface adapts from phone to desktop — the bottom nav becomes desktop navigation, and the framing canvas stays usable at both sizes. The reveal toggle lives in Settings and on a gear button on the card screen.</p>
+  </div>
+</section>
+
+<!-- ================= CARDS ================= -->
+<section id="cards">
+  <div class="wrap">
+    <h2>The two card types</h2>
+    <p class="lede">Only two in the POC. Both are authored, so both always have a defined right answer.</p>
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" aria-selected="true" data-tab="fib">Fill-in-the-blank</button>
+      <button class="tab" role="tab" aria-selected="false" data-tab="frame">Framing scenario</button>
+    </div>
+    <div class="card pad">
+      <div class="tabpane" id="fib">
+        <h3>Image-based fill-in-the-blank</h3>
+        <p>An image, a sentence with a missing word (jargon or gear), and a short set of <b>word choices</b> you tap to fill the blank. No free text, no fuzzy matching — the author supplies the choices, so there is always exactly one right answer.</p>
+        <div class="fields">
+          <div class="field"><div class="k">You see</div>Gear photo · sentence with a blank · tappable word chips.</div>
+          <div class="field"><div class="k">You do</div>Tap a choice.</div>
+          <div class="field"><div class="k">Right</div>The bag reacts — an item nudges in and back.</div>
+          <div class="field"><div class="k">Wrong</div>“Not quite — try again.” Answer revealed (default; the person can switch it off with the gear), with an explanation of the right answer and why the chosen one is wrong. The card returns later.</div>
+        </div>
+      </div>
+      <div class="tabpane" id="frame" hidden>
+        <h3>Framing scenario</h3>
+        <p>A photo with a <b>draggable, resizable frame</b>. You position the crop for the situation — “leader teaching at the lectern” — and submit. Correctness is judged by how close your frame sits to the <b>author's target frame</b>, in <b>both position and size</b>. Inside a tolerance, it's correct. <span class="tag dial">Tolerance is a build-time dial</span></p>
+        <div class="fields">
+          <div class="field"><div class="k">You see</div>A photo, a frame you can drag and resize.</div>
+          <div class="field"><div class="k">You do</div>Place the crop, submit.</div>
+          <div class="field"><div class="k">Judged</div>Distance from the target frame in position + size.</div>
+          <div class="field"><div class="k">On a miss</div>The target frame is drawn over yours, with its explanation.</div>
+          <div class="field crit"><div class="k">Rule</div>Close enough is right — the exact tolerance is set in 4-spec.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BAGS ================= -->
+<section id="bags">
+  <div class="wrap">
+    <h2>The bag is the health</h2>
+    <p class="lede">Health is never a chart. A well-kept crew shows a shiny, packed bag; a quiet crew
+      shows one worn and poorly kept. The POC seeds the worn bag rather than simulating decay.</p>
+    <div class="bags">
+      <div class="bagbox">
+        <svg viewBox="0 0 160 130" role="img" aria-label="Empty bag">
+          <ellipse cx="80" cy="118" rx="46" ry="7" fill="#E9DCC5"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24v40c0 10-18 16-40 16s-40-6-40-16z" fill="#EFE2C9" stroke="#C9B48E" stroke-width="2"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24" fill="none" stroke="#C9B48E" stroke-width="2"/>
+          <path d="M58 34c0-9 9-15 22-15s22 6 22 15" fill="none" stroke="#B79E76" stroke-width="4" stroke-linecap="round"/>
+          <rect x="56" y="62" width="48" height="8" rx="4" fill="#E2D3B6"/>
+          <rect x="56" y="78" width="30" height="8" rx="4" fill="#E2D3B6"/>
+        </svg>
+        <h4>Empty</h4>
+        <p>First use. Inviting, not broken.</p>
+      </div>
+      <div class="bagbox">
+        <svg viewBox="0 0 160 130" role="img" aria-label="Filled, honed bag">
+          <ellipse cx="80" cy="118" rx="46" ry="7" fill="#E9DCC5"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24v40c0 10-18 16-40 16s-40-6-40-16z" fill="#D9A94E" stroke="#A9791F" stroke-width="2"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24" fill="none" stroke="#A9791F" stroke-width="2"/>
+          <path d="M58 34c0-9 9-15 22-15s22 6 22 15" fill="none" stroke="#8E6415" stroke-width="4" stroke-linecap="round"/>
+          <g fill="#F7E6BE" stroke="#B5872C" stroke-width="1.5">
+            <rect x="52" y="58" width="26" height="24" rx="4"/>
+            <rect x="84" y="58" width="24" height="24" rx="4"/>
+            <circle cx="65" cy="98" r="9"/>
+            <circle cx="86" cy="98" r="9"/>
+          </g>
+          <path d="M56 30l4-7 4 7" fill="none" stroke="#FFF4D8" stroke-width="2"/>
+        </svg>
+        <h4>Filled &amp; honed</h4>
+        <p>A tool lands plain or honed, by how well you ran it.</p>
+      </div>
+      <div class="bagbox">
+        <svg viewBox="0 0 160 130" role="img" aria-label="Worn bag">
+          <ellipse cx="80" cy="118" rx="46" ry="7" fill="#E2D8C6"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24v40c0 10-18 16-40 16s-40-6-40-16z" fill="#B9AE99" stroke="#8F8371" stroke-width="2"/>
+          <path d="M40 52c0-16 18-24 40-24s40 8 40 24" fill="none" stroke="#8F8371" stroke-width="2"/>
+          <path d="M58 34c0-9 9-15 22-15s22 6 22 15" fill="none" stroke="#7C7160" stroke-width="4" stroke-linecap="round" stroke-dasharray="5 4"/>
+          <path d="M52 70l10 6-10 6" fill="none" stroke="#7C7160" stroke-width="2"/>
+          <path d="M92 74c6 0 8 6 2 8" fill="none" stroke="#7C7160" stroke-width="2"/>
+          <path d="M62 96h30" stroke="#7C7160" stroke-width="2" stroke-dasharray="4 4"/>
+        </svg>
+        <h4>Worn</h4>
+        <p>An inactive member. Seeded so the contrast shows in one glance.</p>
+      </div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div class="card pad">
+        <h3>Team bag — the aggregate</h3>
+        <p class="muted">One big bag per team. Each tool's fill is the share of that skill's lessons
+          completed across every member of the role — total completions ÷ (members × lessons) — so ten
+          camera crew with four finished reads 40%. The filled part is <b>solid and in colour</b>, the
+          rest an <b>empty outline</b>. In the demo the Camera bag sits about half filled.</p>
+      </div>
+      <div class="card pad">
+        <h3>Personalization</h3>
+        <p class="muted">Colour + bag style (backpack, duffel, sling). Rewards and special designs from
+          leaders are <span class="tag out">deferred</span>. A teammate's view shows your choices — that's the show-off half.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATES ================= -->
+<section id="states">
+  <div class="wrap">
+    <h2>States and boundaries</h2>
+    <div class="grid two">
+      <div class="card pad">
+        <h3>What the person sees</h3>
+        <ul class="checklist">
+          <li><b>First use</b> — the bag is empty; the emptiness is inviting.</li>
+          <li><b>Empty state</b> — a teammate with an empty bag shows an empty bag, not an error.</li>
+          <li><b>Wrong answer</b> — “Not quite — try again,” answer revealed, card queued to return.</li>
+          <li><b>Deck complete / early exit</b> — both reach the score / pass result.</li>
+          <li><b>Worn bag</b> — an inactive member's bag renders worn and dull.</li>
+        </ul>
+      </div>
+      <div class="card pad">
+        <h3>Boundaries</h3>
+        <ul class="checklist">
+          <li><b>Persistence</b> — progress and bag survive closing the app.</li>
+          <li><b>Read-only</b> — leader views and a teammate's bag are viewable, not editable.</li>
+          <li><b>No auth</b> — seeded members stand in for accounts.</li>
+          <li><b>Reveal defaults on</b> — a per-person setting via the gear, not a per-deck one.</li>
+          <li><b>Explanations</b> — the right answer explains itself; the picked wrong choice says why it's wrong.</li>
+          <li><b>Two or three service seams</b> — enough for a genuine distribution.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SCOPE ================= -->
+<section id="scope">
+  <div class="wrap">
+    <h2>Building now / deferred</h2>
+    <p class="lede">Deck authoring, spaced repetition, and the honed finish were added during this
+      interview and are kept deliberately. The dashboard strip and the extra card types were cut.</p>
+    <div class="grid two">
+      <div class="card pad">
+        <h3><span class="tag in">Building</span></h3>
+        <ul class="checklist">
+          <li>One role with content: <b>Camera</b>.</li>
+          <li>Member loop: empty bag → two card types → right/wrong feedback with per-card explanations → reveal toggle → spaced repetition → score / pass.</li>
+          <li>The bag: fills per completed deck; tool lands on return home; plain vs honed; colour + style; teammate view. “At level” = lessons completed; the team bag scales that across the role.</li>
+          <li>Leader: team bag as aggregate health; bag wall; roster; team-bag ↔ own-bag switch.</li>
+          <li>Deck authoring: create, add the two card types (incl. a framing target and per-card explanations), assign.</li>
+          <li>Seeded members, including one inactive with a worn bag.</li>
+          <li>Persistence between sessions.</li>
+          <li>A responsive interface for phone and desktop.</li>
+          <li>Meeting plan: upload a brief, parse it into editable requirements, run three strategies, override by hand with warnings, save the plan, turn gaps into assignments.</li>
+          <li>Five real service boundaries: Content, Progress, Roster &amp; Bags, Requirements, Recommendations.</li>
+        </ul>
+      </div>
+      <div class="card pad">
+        <h3><span class="tag out">Deferred</span></h3>
+        <ul class="checklist deferred">
+          <li>Dashboard strip — the leader analytics service; the team bag already says it in a glance.</li>
+          <li>A separate health bar — redundant with the team bag.</li>
+          <li>Multiple choice, reorder/checklist, audio melody ID, terminal scenarios.</li>
+          <li>Content for video directing, multimedia, audio, networking.</li>
+          <li>Real accounts and registration.</li>
+          <li>Live bag wear-and-tear over time — seeded instead.</li>
+          <li>Richer customization, leader rewards, badge tooling, the leader bag.</li>
+          <li>Comments on decks — surfaced during the interview, not in scope.</li>
+          <li>Discord / WhatsApp notifications.</li>
+          <li>A service per feature.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MEETING PLAN ================= -->
+<section id="plan">
+  <div class="wrap">
+    <h2>Meeting plan <span style="font-size:15px;font-weight:600;color:var(--terra);vertical-align:middle">added in 4-spec</span></h2>
+    <p class="lede">The leader already receives a requirements document for every meeting they
+      serve. This turns that document into a roster and a training plan — and closes the loop the
+      team bag otherwise leaves open: a diagnosis with nothing to do about it.</p>
+
+    <div class="grid two" style="margin-top:20px">
+      <div class="card pad">
+        <h3>The flow</h3>
+        <ol class="checklist" style="list-style:none;padding:0">
+          <li>Upload the brief — <b>.txt</b>, <b>.md</b> or <b>.pdf</b>.</li>
+          <li>A model returns <b>skills, minimum level, headcount</b>, purpose and criticality.</li>
+          <li>The leader <b>edits</b> it. Everything is editable, because the parse is a draft.</li>
+          <li>Recommendations run over confirmed requirements and current progress.</li>
+          <li>The leader <b>picks a strategy</b> and can <b>override by hand</b>.</li>
+          <li>The saved plan's gaps become an <b>assignment</b>.</li>
+        </ol>
+      </div>
+      <div class="card pad">
+        <h3>What the model may and may not do</h3>
+        <p class="muted" style="font-size:14.5px">It <b>parses</b>. It never ranks people, never
+          decides a roster, and never invents a skill — the role's catalogue is passed with the
+          request, and anything outside it fails validation.</p>
+        <p class="muted" style="font-size:14.5px">A real brief asks for PA, streaming and audio
+          recording too. Those are listed as <b>outside this role</b> rather than quietly mapped to
+          something that sounds close.</p>
+        <p class="muted" style="font-size:14.5px">Ranking, warnings and strategy are deterministic
+          rules over progress data, so every suggestion can say <em>why</em> and the demo repeats
+          exactly. If the model is unavailable, the manual form is the fallback — and it had to
+          exist anyway.</p>
+      </div>
+    </div>
+
+    <div class="grid three" style="margin-top:16px">
+      <div class="card pad"><h3>Critical</h3><p class="muted" style="font-size:14px">Maximise coverage of required skills. For a service that cannot afford a miss.</p></div>
+      <div class="card pad"><h3>Balanced</h3><p class="muted" style="font-size:14px">Pair the strongest member on a skill with someone below level on it. Grows the crew during the meeting.</p></div>
+      <div class="card pad"><h3>Develop</h3><p class="muted" style="font-size:14px">Prefer members below level; the meeting is the training. Readiness drops, and the screen says so.</p></div>
+    </div>
+
+    <div class="card pad" style="margin-top:16px">
+      <p class="muted" style="margin:0;font-size:14.5px"><b>And it never ranks people.</b> The crew
+        is never ordered by percentage in a way that reads as a leaderboard — suggestions are
+        ordered by fit to <em>this meeting</em>, with reasons shown. Comparison stays a doorway to
+        mentoring, per the non-goals.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= DECISIONS ================= -->
+<section id="decisions">
+  <div class="wrap">
+    <h2>Product decisions</h2>
+    <div class="grid two">
+      <div class="card pad">
+        <div class="decision"><b>Name: HoneKit.</b><span>The “hone” verb gives the app its vocabulary; the kit is the bag of tools.</span></div>
+        <div class="decision"><b>Leader view first.</b><span>The demo person is a lead, so they're greeted as one. A member with no lead role would land on their own bag.</span></div>
+        <div class="decision"><b>Deck authoring stays in.</b><span>Chosen against scope's Later list — a content service is a legitimate seam for the microservices goal. Flagged as the piece most likely to eat the window.</span></div>
+        <div class="decision"><b>Dashboard strip cut; health bar dropped.</b><span>The team bag <em>is</em> the health read — a second indicator would repeat it.</span></div>
+        <div class="decision"><b>Extra card types deferred.</b><span>The fill-in-the-blank takes <b>choices</b>, not free text, to remove grading ambiguity.</span></div>
+      </div>
+      <div class="card pad">
+        <div class="decision"><b>Spaced repetition kept.</b><span>Wrong cards sooner, right cards later.</span></div>
+        <div class="decision"><b>Honed finish kept.</b><span>Tools arrive plain or honed, by performance.</span></div>
+        <div class="decision"><b>Personalization kept simple.</b><span>Colour and bag style only.</span></div>
+        <div class="decision"><b>Reveal defaults on — and it's the person's setting.</b><span>Reachable from the gear on the card screen; the deck doesn't decide it.</span></div>
+        <div class="decision"><b>Cards explain themselves.</b><span>The author writes an explanation for the right answer and a reason for each wrong choice.</span></div>
+        <div class="decision"><b>“At level” = lessons completed.</b><span>Individual progress is the percentage of the role's lessons completed; the team bag scales that across everyone in the role.</span></div>
+        <div class="decision"><b>Responsive from phone to desktop.</b></div>
+        <div class="decision"><b>Worn bags are seeded, not simulated.</b><span>The contrast must show in one demo glance.</span></div>
+        <h3 style="margin-top:16px">Non-goals</h3>
+        <ul class="checklist deferred">
+          <li>No scoring or ranking people against each other — comparison encourages, never demoralizes.</li>
+          <li>Not a general-purpose study app — the bag is the kernel.</li>
+          <li>Not building the future services now.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPEN ================= -->
+<section id="open">
+  <div class="wrap">
+    <h2>Open questions</h2>
+    <div class="card pad">
+      <ul class="pill-list">
+        <li>Exact “correct” tolerance for framing <span class="tag dial" style="margin-left:6px">4-spec</span></li>
+        <li>Deck pass threshold &amp; score formula <span class="tag dial" style="margin-left:6px">4-spec</span></li>
+        <li>Which two or three service boundaries <span class="tag dial" style="margin-left:6px">4-spec</span></li>
+        <li>Whether authoring fits the build window — first thing to cut if it runs long</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    HoneKit · Product Requirements · companion to <code>devpost/prd.md</code> (canonical). Self-contained —
+    no network needed; keep both in sync when the PRD changes.
+  </div>
+</footer>
+
+<script>
+/* ---------- journey stepper ---------- */
+const STEPS = [
+  {t:"Open the app", s:"Team bag · leader home",
+   see:"You land on the Camera team bag — the aggregate that reads the crew's health at a glance. A header names the team; the roster sits below.",
+   act:"Nothing yet. Orient.",
+   state:"Leader-first landing (this person is both a lead and a member).",
+   crit:"Opening the app as a lead shows the Camera team bag, not a member bag."},
+  {t:"Read the roster", s:"Team bag · leader home",
+   see:"The team's members as a list — name, their bag, their standing.",
+   act:"Scan who's on the team.",
+   state:"Read-only.",
+   crit:"Every member whose primary OR secondary role is Camera appears."},
+  {t:"Open the team bag", s:"Bag wall",
+   see:"The team bag unzips and the members' own bags sit side by side. One looks worn — a teammate who's gone quiet.",
+   act:"Look in.",
+   state:"Read-only.",
+   crit:"Opening the team bag reveals the wall; the seeded inactive member's bag reads as worn."},
+  {t:"Switch to your own bag", s:"My bag · member view",
+   see:"Your own bag. It starts empty.",
+   act:"Move from leader view to member view.",
+   state:"Empty state — inviting, not broken.",
+   crit:"A new member's bag is empty and doesn't look like an error."},
+  {t:"Answer a fill-in-the-blank", s:"Card player",
+   see:"An image, a sentence with a blank, and word choices.",
+   act:"Tap a choice.",
+   state:"Normal use.",
+   crit:"Choices only — no free text; exactly one is right."},
+  {t:"Answer a framing scenario", s:"Card player",
+   see:"A photo and a frame you can drag and resize.",
+   act:"Position the crop for the situation and submit.",
+   state:"Normal use.",
+   crit:"Graded by closeness to the author's target frame in position AND size; inside tolerance = correct."},
+  {t:"Get it right, or wrong", s:"Card player",
+   see:"Right: the bag reacts — an item nudges in and back. Wrong: “Not quite — try again,” then the answer is revealed with an explanation — and the picked wrong choice says why it's wrong.",
+   act:"Move on.",
+   state:"Wrong-answer state · reveal default on; the person can switch it off in settings.",
+   crit:"A card answered wrong returns sooner than one answered right."},
+  {t:"Finish the deck", s:"Deck result",
+   see:"A score / pass.",
+   act:"Complete every card, or exit early.",
+   state:"Both routes reach the same result screen.",
+   crit:"Completing on all-correct and exiting early both close the deck."},
+  {t:"The tool drops", s:"Return home",
+   see:"The earned tool lands in the bag with an animation — plain, or honed if you ran it well.",
+   act:"Watch it land.",
+   state:"Success state.",
+   crit:"Completing a deck drops exactly one tool; performance decides its finish."},
+  {t:"Personalize it", s:"My bag",
+   see:"Colour and bag-style options.",
+   act:"Pick a colour and a style.",
+   state:"Normal use.",
+   crit:"The choice sticks and shows up wherever your bag is viewed."},
+  {t:"Peek at a teammate's bag", s:"Teammate's bag",
+   see:"Their bag, with their colour and style.",
+   act:"Look, don't touch.",
+   state:"Read-only.",
+   crit:"The teammate's bag shows their personalization, not the default."},
+  {t:"Upload the meeting brief", s:"Meeting plan · leader",
+   see:"A drop zone. The brief the leader was already sent goes in; text is extracted, and a model is asked what the meeting needs.",
+   act:"Upload the document.",
+   state:"Parse-in-progress, cancellable.",
+   crit:"TXT, MD and PDF all produce a requirement set; a scan falls back to paste."},
+  {t:"Check the parse", s:"Meeting plan · leader",
+   see:"The requirements as editable items beside the source, with provenance: which document, when it was read. Services the brief asks for that aren't camera work — PA, streaming, audio — are listed separately, not invented as skills.",
+   act:"Add live switching, which the document didn't state.",
+   state:"Editable draft — the model's output is never authoritative.",
+   crit:"Every parsed skill must exist in the role's catalogue; outside-role services are named, not swallowed."},
+  {t:"Ask for a roster", s:"Meeting plan · leader",
+   see:"Ranked crew with a one-sentence reason each, under the strategy they chose.",
+   act:"Switch between critical, balanced and develop.",
+   state:"Confirmed requirements required first.",
+   crit:"All three strategies run on the same data and explain their ordering."},
+  {t:"Override by hand", s:"Meeting plan · leader",
+   see:"The app states the cost of the pick — “below this meeting's requirement” — without blocking it.",
+   act:"Pick someone the ranking didn't lead with.",
+   state:"Override warning.",
+   crit:"A hand-picked plan can always be saved; the warning is information, not a gate."},
+  {t:"Save the plan", s:"Meeting plan · leader",
+   see:"The plan is kept. The gaps it exposed are offered as an assignment to the people below level.",
+   act:"Send the deck, or close.",
+   state:"Saved state.",
+   crit:"The plan reopens with the same requirements, strategy and picks."}
+];
+
+const stepsEl = document.getElementById('steps');
+const panelEl = document.getElementById('panel');
+const dotsEl  = document.getElementById('dots');
+
+STEPS.forEach((st,i)=>{
+  const b=document.createElement('button');
+  b.className='step'; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i===0);
+  b.innerHTML=`<span class="stepnum">${i+1}</span><span><span class="stitle">${st.t}</span><br><span class="ssub">${st.s}</span></span>`;
+  b.addEventListener('click',()=>show(i));
+  stepsEl.appendChild(b);
+  const d=document.createElement('button');
+  d.className='dot'; d.setAttribute('aria-label','Step '+(i+1)); d.setAttribute('aria-current', i===0);
+  d.addEventListener('click',()=>show(i));
+  dotsEl.appendChild(d);
+});
+
+let cur=0;
+function show(i){
+  cur=(i+STEPS.length)%STEPS.length;
+  const st=STEPS[cur];
+  [...stepsEl.children].forEach((c,k)=>c.setAttribute('aria-selected', k===cur));
+  [...dotsEl.children].forEach((c,k)=>c.setAttribute('aria-current', k===cur));
+  panelEl.innerHTML=`
+    <div class="phead">
+      <div><h3>${cur+1}. ${st.t}</h3><div class="muted" style="font-size:13.5px">${st.s}</div></div>
+      <div class="pnav">
+        <button class="btn" id="prev">← Prev</button>
+        <button class="btn primary" id="next">Next →</button>
+      </div>
+    </div>
+    <div class="fields">
+      <div class="field"><div class="k">You see</div>${st.see}</div>
+      <div class="field"><div class="k">You do</div>${st.act}</div>
+      <div class="field"><div class="k">State</div>${st.state}</div>
+      <div class="field crit"><div class="k">Proves it works</div>${st.crit}</div>
+    </div>`;
+  panelEl.querySelector('#prev').addEventListener('click',()=>show(cur-1));
+  panelEl.querySelector('#next').addEventListener('click',()=>show(cur+1));
+}
+show(0);
+
+/* ---------- card tabs ---------- */
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    const id=tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-selected', t===tab));
+    document.querySelectorAll('.tabpane').forEach(p=>p.hidden = (p.id!==id));
+  });
+});
+
+/* ---------- keyboard on stepper ---------- */
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight') show(cur+1);
+  if(e.key==='ArrowLeft')  show(cur-1);
+});
+</script>
+</body>
+</html>

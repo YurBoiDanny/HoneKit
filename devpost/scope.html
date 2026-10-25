@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BrainPicker — Scope</title>
+<style>
+  :root{
+    --bg:#f6f3ee; --panel:#ffffff; --ink:#1b1917; --muted:#6d665d; --line:#e4ded4;
+    --accent:#b4530a; --accent-soft:#fdf1e3; --teal:#0f766e; --teal-soft:#e6f4f2;
+    --good:#15803d; --shadow:0 1px 2px rgba(27,25,23,.05),0 8px 24px rgba(27,25,23,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:0 20px 80px;
+  }
+  .wrap{max-width:1020px;margin:0 auto}
+  header.hero{padding:56px 0 28px;border-bottom:1px solid var(--line)}
+  .kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  h1{font-size:44px;line-height:1.08;margin:10px 0 10px;letter-spacing:-.02em}
+  .tagline{font-size:19px;color:var(--muted);max-width:44ch;margin:0}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+  .chip{font-size:12.5px;font-weight:600;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted)}
+  .chip.draft{background:var(--accent-soft);border-color:#f0d9bd;color:var(--accent)}
+  section{padding:44px 0;border-bottom:1px solid var(--line)}
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 20px;font-weight:700}
+  h3{font-size:21px;margin:0 0 8px;letter-spacing:-.01em}
+  p{margin:0 0 12px}
+  .lead{font-size:18px}
+  .kernel{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .kcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px 18px 6px;box-shadow:var(--shadow)}
+  .kcard h4{margin:6px 0 2px;font-size:15px}
+  .kcard span.sub{color:var(--muted);font-size:13.5px}
+  .kcard svg{width:100%;height:auto;display:block}
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:6px}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;position:relative;box-shadow:var(--shadow)}
+  .step .n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:700;margin-bottom:10px}
+  .step h4{margin:0 0 6px;font-size:15.5px}
+  .step p{margin:0;font-size:14px;color:var(--muted)}
+  .step:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:#c9c1b4;font-size:18px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}
+  .card h3{margin-bottom:10px}
+  .card.who{border-left:4px solid var(--accent)}
+  .card.who.leader{border-left-color:var(--teal)}
+  .demo{background:linear-gradient(180deg,#fffdf9,#fdf7ee);border:1px solid #efe4d3;border-radius:18px;padding:24px;box-shadow:var(--shadow)}
+  .beat{margin-top:16px;background:var(--accent-soft);border:1px dashed #e8c9a0;border-radius:14px;padding:14px 16px}
+  .beat strong{color:var(--accent)}
+  .teambag{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:center}
+  .teambag svg{width:100%;height:auto}
+  .toggle{margin-top:22px}
+  .toggle input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+  .toggle-tabs{display:inline-flex;gap:6px;background:#efe9df;border:1px solid var(--line);border-radius:999px;padding:4px;margin-bottom:22px}
+  .toggle-tabs label{cursor:pointer;font-size:14px;font-weight:600;color:var(--muted);padding:7px 16px;border-radius:999px;transition:background .15s,color .15s}
+  #v-wall:checked ~ .toggle-tabs label[for="v-wall"],
+  #v-team:checked ~ .toggle-tabs label[for="v-team"]{background:var(--panel);color:var(--ink);box-shadow:var(--shadow)}
+  .toggle input:focus-visible ~ .toggle-tabs label{outline:2px solid var(--accent);outline-offset:2px}
+  .panel{display:none}
+  #v-wall:checked ~ .p-wall{display:block}
+  #v-team:checked ~ .p-team{display:block}
+  .wall{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .wall .kcard{padding:12px 12px 10px;text-align:center}
+  .wall .kcard svg{width:100%;height:auto;max-height:130px}
+  .wall .kcard span.sub{display:block;margin-top:6px;font-size:12.5px}
+  .swatches{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 4px}
+  .sw{width:34px;height:34px;border-radius:10px;border:1px solid rgba(0,0,0,.08)}
+  .flavor{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:6px}
+  .tag{font-size:13px;padding:5px 11px;border-radius:999px;background:var(--teal-soft);color:var(--teal);border:1px solid #cfe8e4;font-weight:600}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:16px;margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
+  details>summary{cursor:pointer;list-style:none;padding:16px 20px;font-weight:700;display:flex;align-items:center;gap:12px}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::before{content:"+";font-family:ui-monospace,monospace;color:var(--muted)}
+  details[open]>summary::before{content:"–"}
+  details .body{padding:0 20px 18px 20px}
+  .badge{font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-left:auto}
+  .b-now{background:#e8f5ec;color:var(--good)}
+  .b-later{background:#eef0f6;color:#4a5468}
+  .b-future{background:var(--teal-soft);color:var(--teal)}
+  .b-cut{background:#fdeaea;color:#b3261e}
+  ul{margin:0;padding-left:20px}
+  li{margin:0 0 8px}
+  .soft{background:#fff8ec;border:1px solid #f0dcbb;border-radius:16px;padding:18px 20px;margin-top:22px}
+  .soft h4{margin:0 0 8px;color:var(--accent);font-size:15px}
+  .soft p:last-child{margin-bottom:0}
+  footer{padding:30px 0 0;color:var(--muted);font-size:13.5px}
+  @media (max-width:760px){
+    h1{font-size:34px}
+    .kernel,.grid2,.flow,.teambag{grid-template-columns:1fr}
+    .step:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-14px;transform:translateX(50%)}
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.9)}to{opacity:1;transform:none}}
+  .tool{animation:pop .55s cubic-bezier(.2,.8,.2,1) both;transform-box:fill-box;transform-origin:center}
+  .tool:nth-child(1){animation-delay:.25s}
+  .tool:nth-child(2){animation-delay:.45s}
+  .tool:nth-child(3){animation-delay:.65s}
+  .patch{animation:pop .5s cubic-bezier(.2,.8,.2,1) both;transform-box:fill-box;transform-origin:center}
+  .patch:nth-child(1){animation-delay:.85s}
+  .patch:nth-child(2){animation-delay:1s}
+  .patch:nth-child(3){animation-delay:1.15s}
+  @media (prefers-reduced-motion:reduce){.tool,.patch{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <div class="kicker">Scope &middot; planning review</div>
+    <h1>BrainPicker</h1>
+    <p class="tagline">A flashcard app for the church's production teams, where what you learn shows up
+      as tools and patches in a bag you own — and can show off.</p>
+    <div class="chips">
+      <span class="chip draft">Approved</span>
+      <span class="chip">Proof of concept</span>
+      <span class="chip">Role: Camera</span>
+      <span class="chip">Member &amp; leader demo</span>
+      <span class="chip">Working name</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>The unique kernel</h2>
+    <p class="lead" style="max-width:62ch">The bag. It starts <strong>empty</strong>. Every card you complete
+      puts something visible inside it. Competency becomes something you can <em>see</em> — and share.</p>
+    <div class="kernel" style="margin-top:22px">
+      <div class="kcard">
+        <svg viewBox="0 0 160 152" role="img" aria-label="An empty bag">
+          <g fill="none" stroke="#c9c1b4" stroke-width="3" stroke-linecap="round">
+            <path d="M55 30 C55 13,105 13,105 30"/>
+            <rect x="24" y="38" width="112" height="98" rx="20" stroke-dasharray="6 7"/>
+            <path d="M24 64 H136"/>
+            <rect x="48" y="82" width="64" height="40" rx="11"/>
+          </g>
+        </svg>
+        <h4>Nothing yet</h4>
+        <span class="sub">A new member opens the app to an empty bag.</span>
+      </div>
+      <div class="kcard">
+        <svg viewBox="0 0 160 152" role="img" aria-label="A bag with tools and patches">
+          <g class="tool">
+            <rect x="30" y="16" width="34" height="25" rx="6" fill="#3f3a34"/>
+            <circle cx="47" cy="28.5" r="7.5" fill="#f6f3ee"/>
+            <rect x="72" y="14" width="30" height="27" rx="5" fill="#0f766e"/>
+            <path d="M78 22h18M78 28h18M78 34h18" stroke="#e6f4f2" stroke-width="2.4" stroke-linecap="round"/>
+            <rect x="110" y="19" width="28" height="21" rx="4" fill="#b4530a"/>
+          </g>
+          <g fill="none" stroke="#8a8177" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+            <path d="M55 30 C55 13,105 13,105 30"/>
+            <rect x="24" y="38" width="112" height="98" rx="20" fill="#ffffff"/>
+            <path d="M24 64 H136"/>
+            <rect x="48" y="82" width="64" height="40" rx="11" fill="#fdf7ee"/>
+          </g>
+          <g class="patch">
+            <path d="M62 92l4.3 8.7 9.6 1.4-7 6.8 1.7 9.6-8.6-4.5-8.6 4.5 1.7-9.6-7-6.8 9.6-1.4z" fill="#b4530a"/>
+            <circle cx="100" cy="103" r="9" fill="#0f766e"/>
+            <rect x="86" y="82" width="18" height="18" rx="5" fill="#e0b25a"/>
+          </g>
+        </svg>
+        <h4>Earned</h4>
+        <span class="sub">Answer right, and a tool pops in or a patch gets sewn on.</span>
+      </div>
+    </div>
+    <p style="margin-top:20px;color:var(--muted);max-width:66ch">Remove the bag and this is a generic
+      quiz app with a leaderboard. Keep it, and comparison stops being a scoreboard and becomes
+      <strong>“how'd you get that?”</strong> — a doorway to mentorship and celebration.</p>
+  </section>
+
+  <section>
+    <h2>The core loop</h2>
+    <div class="flow">
+      <div class="step"><span class="n">1</span><h4>Open</h4><p>Your primary/secondary role focus is right there.</p></div>
+      <div class="step"><span class="n">2</span><h4>Answer</h4><p>Cards for your role — real ones, not textbook ones.</p></div>
+      <div class="step"><span class="n">3</span><h4>Bag fills</h4><p>Tools and patches land, visibly, as you go.</p></div>
+      <div class="step"><span class="n">4</span><h4>Show &amp; peek</h4><p>Personalize yours; look at a teammate's.</p></div>
+    </div>
+    <p style="margin-top:20px;color:var(--muted)">You come back because a bag is never finished.
+      For a leader, the loop is different: open the <strong>team bag</strong> and see at a glance how much
+      of the team is genuinely proficient.</p>
+  </section>
+
+  <section>
+    <h2>Who it's for</h2>
+    <div class="grid2">
+      <div class="card who">
+        <h3>A camera operator</h3>
+        <p>Concretely, you. They serve Sunday services, but also midweek meetings, Saturdays, and the
+          occasional special or extra event.</p>
+        <p style="margin:0">They need proficiency in a primary <em>and</em> a secondary role so a leader can
+          call on them flexibly — and today there's no way to see their own growth, or learn from a peer,
+          except by showing up.</p>
+      </div>
+      <div class="card who leader">
+        <h3>A team leader</h3>
+        <p>Serves on the team like everyone else, so they carry their own member bag.</p>
+        <p style="margin:0">But they also grow people, and need a read on where the team actually is —
+          especially with thin crews and events that appear midweek.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px;color:var(--muted);max-width:66ch"><strong>You are both.</strong> A camera
+      operator and a team lead — which is why the proof of concept demos both sides, not just the member's.</p>
+  </section>
+
+  <section>
+    <h2>What “working” looks like</h2>
+    <div class="demo">
+      <h3>The demo — both sides</h3>
+      <p><strong>As a member:</strong> a member opens the app (seeded profile) and sees an <strong>empty bag</strong>.
+        They get a camera foundational deck and answer two cards: an image-based fill-in-the-blank on jargon, and
+        a framing scenario — positioning the crop for “leader teaching at the lectern.” The bag visibly gains its
+        first tools and patches. They open a teammate's bag and see theirs.</p>
+      <p><strong>As a team lead:</strong> they open the <strong>bag wall</strong> — the crew's bags side by side —
+        and can step back to the <strong>team bag</strong>, one big bag for the whole camera team whose camera is
+        only half filled: solid on one side, bare outline on the other.</p>
+      <p style="margin:0">One person is both, so the demo moves between the two without losing their own bag.</p>
+      <div class="beat"><strong>The “oh, that's cool” beat:</strong> the empty bag filling — a tool landing in it
+        the moment you get an answer right.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>The leader's view</h2>
+    <p class="lead" style="max-width:64ch">Two ways to look at the same truth — each member's own bag, or
+      the team as one. The leader chooses.</p>
+    <div class="toggle">
+      <input type="radio" name="leaderview" id="v-wall" checked>
+      <input type="radio" name="leaderview" id="v-team">
+      <div class="toggle-tabs">
+        <label for="v-wall">Bags side by side</label>
+        <label for="v-team">One team bag</label>
+      </div>
+      <div class="panel p-wall">
+        <div class="wall">
+          <div class="kcard">
+            <svg viewBox="0 0 120 122" role="img" aria-label="A member's empty bag">
+              <g fill="none" stroke="#c9c1b4" stroke-width="2.6" stroke-linecap="round">
+                <path d="M42 26 C42 13,78 13,78 26"/>
+                <rect x="18" y="32" width="84" height="74" rx="15" stroke-dasharray="5 6"/>
+                <path d="M18 52 H102"/>
+                <rect x="38" y="64" width="44" height="30" rx="9"/>
+              </g>
+            </svg>
+            <span class="sub">Just started</span>
+          </div>
+          <div class="kcard">
+            <svg viewBox="0 0 120 122" role="img" aria-label="A member bag with one tool and one patch">
+              <g class="tool">
+                <rect x="26" y="14" width="26" height="19" rx="4" fill="#3f3a34"/>
+                <circle cx="39" cy="23.5" r="5.5" fill="#f6f3ee"/>
+              </g>
+              <g fill="none" stroke="#8a8177" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M42 26 C42 13,78 13,78 26"/>
+                <rect x="18" y="32" width="84" height="74" rx="15" fill="#ffffff"/>
+                <path d="M18 52 H102"/>
+                <rect x="38" y="64" width="44" height="30" rx="9" fill="#fdf7ee"/>
+              </g>
+              <g class="patch"><circle cx="54" cy="79" r="7" fill="#b4530a"/></g>
+            </svg>
+            <span class="sub">Getting there</span>
+          </div>
+          <div class="kcard">
+            <svg viewBox="0 0 120 122" role="img" aria-label="A member bag with two tools and two patches">
+              <g class="tool">
+                <rect x="20" y="14" width="26" height="19" rx="4" fill="#3f3a34"/>
+                <circle cx="33" cy="23.5" r="5.5" fill="#f6f3ee"/>
+                <rect x="56" y="12" width="24" height="21" rx="4" fill="#0f766e"/>
+              </g>
+              <g fill="none" stroke="#8a8177" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M42 26 C42 13,78 13,78 26"/>
+                <rect x="18" y="32" width="84" height="74" rx="15" fill="#ffffff"/>
+                <path d="M18 52 H102"/>
+                <rect x="38" y="64" width="44" height="30" rx="9" fill="#fdf7ee"/>
+              </g>
+              <g class="patch">
+                <path d="M0 -9 l2.6 5.4 5.9 .8 -4.3 4.2 1 5.9 -5.2 -2.8 -5.2 2.8 1 -5.9 -4.3 -4.2 5.9 -.8z" transform="translate(46,79)" fill="#b4530a"/>
+                <circle cx="70" cy="82" r="6" fill="#0f766e"/>
+              </g>
+            </svg>
+            <span class="sub">Solid</span>
+          </div>
+          <div class="kcard">
+            <svg viewBox="0 0 120 122" role="img" aria-label="A member bag with three tools and three patches">
+              <g class="tool">
+                <rect x="16" y="14" width="24" height="18" rx="4" fill="#3f3a34"/>
+                <circle cx="28" cy="23" r="5" fill="#f6f3ee"/>
+                <rect x="48" y="12" width="22" height="20" rx="4" fill="#0f766e"/>
+                <rect x="78" y="15" width="22" height="16" rx="3" fill="#b4530a"/>
+              </g>
+              <g fill="none" stroke="#8a8177" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round">
+                <path d="M42 26 C42 13,78 13,78 26"/>
+                <rect x="18" y="32" width="84" height="74" rx="15" fill="#ffffff"/>
+                <path d="M18 52 H102"/>
+                <rect x="38" y="64" width="44" height="30" rx="9" fill="#fdf7ee"/>
+              </g>
+              <g class="patch">
+                <path d="M0 -8 l2.4 4.9 5.4 .7 -3.9 3.8 .9 5.4 -4.8 -2.5 -4.8 2.5 .9 -5.4 -3.9 -3.8 5.4 -.7z" transform="translate(45,78)" fill="#b4530a"/>
+                <circle cx="68" cy="79" r="5.5" fill="#0f766e"/>
+                <rect x="55" y="86" width="11" height="11" rx="3" fill="#e0b25a"/>
+              </g>
+            </svg>
+            <span class="sub">Strong</span>
+          </div>
+        </div>
+        <p style="margin-top:18px;color:var(--muted);max-width:64ch">The default view: who's got what, at a
+          glance — and who to go ask. Each bag is personal to its owner; the leader sees the collection, not
+          anyone's private detail.</p>
+      </div>
+      <div class="panel p-team">
+        <div class="teambag">
+      <svg viewBox="0 0 300 260" role="img" aria-label="A large team bag with a half-filled camera tool">
+        <defs>
+          <clipPath id="halfCam" clipPathUnits="userSpaceOnUse">
+            <rect x="90" y="104" width="60" height="86"/>
+          </clipPath>
+        </defs>
+        <g fill="none" stroke="#8a8177" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+          <path d="M110 74 C110 52,190 52,190 74"/>
+          <rect x="40" y="70" width="220" height="164" rx="30" fill="#ffffff"/>
+          <path d="M40 112 H260"/>
+        </g>
+        <g fill="none" stroke="#b9b1a6" stroke-width="4">
+          <rect x="90" y="118" width="120" height="72" rx="12"/>
+          <rect x="122" y="104" width="30" height="14" rx="4"/>
+          <circle cx="150" cy="154" r="24"/>
+          <circle cx="150" cy="154" r="11"/>
+        </g>
+        <g clip-path="url(#halfCam)">
+          <rect x="90" y="118" width="120" height="72" rx="12" fill="#b4530a"/>
+          <rect x="122" y="104" width="30" height="14" rx="4" fill="#b4530a"/>
+          <circle cx="150" cy="154" r="24" fill="#8a3f07"/>
+          <circle cx="150" cy="154" r="11" fill="#fff"/>
+        </g>
+        <text x="150" y="222" text-anchor="middle" font-size="14" fill="#6d665d"
+          font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">≈ half the crew proficient</text>
+      </svg>
+      <div>
+        <p>Step back and the team becomes one <strong>aggregate bag</strong> per role, where each tool
+          fills in proportion to how many people are actually at level.</p>
+        <p style="color:var(--muted)">If only about half the camera team is proficient, the camera is half
+          filled — solid colour and detail on one side, bare outlined border on the other, at a glance.</p>
+        <div class="flavor"><span class="tag">Half-filled camera = half the crew at level</span></div>
+        <p style="margin:0;color:var(--muted);font-size:14px">The filled half is solid and in colour; the rest
+          is transparent, outlined only. Want the detail? Click through for the plainer list view. Illustration
+          is an example, not a metric.</p>
+        </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Bag flavor</h2>
+    <p style="max-width:62ch">Personalization means the bag is <em>yours</em>: colors, bag style, glossy or matte
+      patches and pins, a drawing on the front. An illustrative palette, not a spec — the point is that it becomes
+      something you want to show off.</p>
+    <div class="swatches">
+      <span class="sw" style="background:#b4530a"></span>
+      <span class="sw" style="background:#0f766e"></span>
+      <span class="sw" style="background:#3f3a34"></span>
+      <span class="sw" style="background:#e0b25a"></span>
+      <span class="sw" style="background:#8a3f07"></span>
+      <span class="sw" style="background:#5b6bd6"></span>
+    </div>
+    <div class="flavor">
+      <span class="tag">Bag style</span>
+      <span class="tag">Glossy / matte</span>
+      <span class="tag">Pin &amp; stripe shades</span>
+      <span class="tag">Your drawing</span>
+    </div>
+    <p style="color:var(--muted);font-size:14px;margin:0">Richer customization lands later. The PoC needs enough
+      flavor that the bag feels like yours.</p>
+  </section>
+
+  <section>
+    <h2>The boundary</h2>
+    <details open>
+      <summary>In the proof of concept <span class="badge b-now">Now</span></summary>
+      <div class="body">
+        <ul>
+          <li><strong>One role: Camera.</strong> Video directing is a listed team/role, but with no content yet.</li>
+          <li><strong>Both sides demoed:</strong> a team member's loop, and a team lead's bag wall and team
+            bag — the same person is both.</li>
+          <li><strong>Two card types:</strong> image-based fill-in-the-blank (jargon, gear) and a framing scenario
+            (position the shot for a given situation).</li>
+          <li><strong>The bag:</strong> empty → fills with tools/patches → bag flavor → view a teammate's bag.</li>
+          <li><strong>Leader view, two modes the leader switches between:</strong> the <strong>bag wall</strong>
+            (members' bags side by side) and the <strong>team bag</strong> (one aggregate bag per role, tools filled
+            in proportion to team proficiency), with a plainer list view on click. Read-only.</li>
+          <li><strong>Two or three real service boundaries</strong>, so the orchestration and microservice goals have
+            a genuine seam to work with. Architecture decided in <code>4-spec</code>.</li>
+          <li><strong>Seeded members</strong> instead of real accounts.</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Later &middot; with a seam left where it's cheap <span class="badge b-later">Later</span></summary>
+      <div class="body">
+        <ul>
+          <li>Content for video directing, multimedia, audio, networking</li>
+          <li>More card types: ordering/checklist, audio melody ID, terminal scenarios</li>
+          <li>Deck authoring and targeted assignment (“push this to the people who need it”)</li>
+          <li>Badge design tooling; the leader bag; multiple / role-shaded bags</li>
+          <li>Richer bag customization (custom drawings, more styles and finishes)</li>
+          <li>Discord notifications (a seam in the PoC), then WhatsApp</li>
+          <li>Real accounts and registration</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Future services &middot; planned, not built <span class="badge b-future">Future</span></summary>
+      <div class="body">
+        <p>They belong in their own services because they tie back into training — named here so the PoC's
+          boundaries leave room for them.</p>
+        <ul>
+          <li><strong>Leader analytics → rostering, scheduling, inventory:</strong> who's best for the job, what each
+            team needs, training plans, who to schedule. Feeds off the same progress data the bag uses.</li>
+          <li><strong>Chat</strong></li>
+          <li><strong>Notifications</strong> (Discord / WhatsApp)</li>
+        </ul>
+      </div>
+    </details>
+    <details>
+      <summary>Explicitly cut from the PoC <span class="badge b-cut">Cut</span></summary>
+      <div class="body">
+        <p>Nothing is cut from the <em>product vision</em> — the above is sequencing. Cut from the <em>PoC</em>:</p>
+        <ul>
+          <li><strong>Real authentication and registration.</strong> Seeded members prove the same thing in the
+            demo; auth is a timesink that says nothing about the kernel.</li>
+          <li><strong>Building any future service now.</strong> They're named so we plan for them, not so we build
+            them this weekend.</li>
+          <li><strong>A service per feature.</strong> Two or three seams chosen so the distribution is justified —
+            not a dozen services holding nothing.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section>
+    <h2>Learning goals this must serve</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>Multi-agent orchestration</h3>
+        <p style="margin:0">You drive the coordination of the agents — not the agent.</p>
+      </div>
+      <div class="card">
+        <h3>Small-scale microservices</h3>
+        <p style="margin:0">A distributed shape small enough to hold in your head, with real seams.</p>
+      </div>
+    </div>
+    <p style="margin-top:18px;color:var(--muted);max-width:64ch">Both goals want <em>more</em> surface, not less. So the
+      PoC is cut to keep <strong>real seams</strong> rather than removed surface. <code>4-spec</code> picks the boundaries.</p>
+    <div class="soft">
+      <h4>Still soft — worth a look in 3-prd</h4>
+      <p>“Bag flavor” needs a concrete first version, and the team bag's fill rule (what counts as “at level”) is
+        currently a nice picture rather than a definition.</p>
+    </div>
+  </section>
+
+  <footer>
+    Companion to <code>devpost/scope.md</code>, which is the canonical source. Markdown wins if they disagree.
+  </footer>
+
+</div>
+</body>
+</html>
