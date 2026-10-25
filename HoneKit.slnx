@@ -25,5 +25,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HoneKit.Progress.Tests/HoneKit.Progress.Tests.csproj" />
+    <Project Path="tests/HoneKit.Roster.Tests/HoneKit.Roster.Tests.csproj" />
   </Folder>
 </Solution>

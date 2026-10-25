@@ -139,6 +139,25 @@ public sealed class ProgressDomainTests
     }
 
     [Fact]
+    public void A_plain_run_after_a_honed_one_keeps_the_skill_honed()
+    {
+        // The later plain session does not erase the earlier honed one, and a deck Content no
+        // longer knows cannot invent a skill.
+        (string DeckId, bool Honed)[] sessions =
+        [
+            ("deck-camera-foundations", true),
+            ("deck-camera-foundations", false),
+            ("deck-retired", true)
+        ];
+
+        var skillIds = ProgressDomain.HonedSkillIds(
+            sessions,
+            new Dictionary<string, string> { ["deck-camera-foundations"] = "framing" });
+
+        Assert.Equal(new[] { "framing" }, skillIds);
+    }
+
+    [Fact]
     public void Review_due_comes_back_quickly_when_wrong_and_days_later_when_right()
     {
         var now = new DateTimeOffset(2026, 10, 25, 9, 0, 0, TimeSpan.Zero);

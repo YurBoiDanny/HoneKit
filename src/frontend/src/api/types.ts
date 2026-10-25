@@ -68,6 +68,11 @@ export interface EarnedToolDto {
   acknowledged: boolean;
 }
 
+export interface HonedSkillsDto {
+  memberId: string;
+  skillIds: string[];
+}
+
 export interface LessonDto {
   id: string;
   skillId: string;

@@ -53,6 +53,10 @@ public sealed record CompletionsDto(string MemberId, IReadOnlyList<string> Lesso
 
 public sealed record PreferencesRequest(bool ShowAnswerOnWrong);
 
+public sealed record HonedSkillsDto(string MemberId, IReadOnlyList<string> SkillIds);
+
+public sealed record AcknowledgeRequest(string SkillId);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

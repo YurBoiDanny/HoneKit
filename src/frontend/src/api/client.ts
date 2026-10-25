@@ -69,6 +69,12 @@ export const submitAttempt = (sessionId: string, cardId: string, answer: string)
 export const finishSession = (sessionId: string, exitedEarly: boolean) =>
   post<SessionResultDto>(`/api/progress/sessions/${sessionId}/finish`, { exitedEarly });
 
+export const acknowledgeTool = (memberId: string, skillId: string) =>
+  request<void>(`/api/roster/members/${memberId}/bag/acknowledge`, {
+    method: 'POST',
+    body: JSON.stringify({ skillId }),
+  });
+
 export const setShowAnswerOnWrong = (memberId: string, showAnswerOnWrong: boolean) =>
   request<void>(`/api/roster/members/${memberId}/preferences`, {
     method: 'PATCH',

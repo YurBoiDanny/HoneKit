@@ -161,7 +161,7 @@ export function DeckScreen() {
             {result.firstTryCorrect} of {result.totalCards} right on the first try — {result.scorePercent}%.
           </p>
           {result.passed ? (
-            <p>Passed. The deck is done and the work counts.</p>
+            <p>Passed. The deck is done and the work counts. Head home — it lands in your bag.</p>
           ) : result.toolGranted ? (
             <p>
               The deck is complete, so it still lands in your bag. A pass needs 80% on the first

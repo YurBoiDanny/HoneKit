@@ -93,20 +93,27 @@ public static class RosterEndpoints
                 lessons.DistinctBy(lesson => lesson.Id),
                 distinctSkills);
 
+            // One extra Progress call, and only worth making when there is a tool to decorate.
+            IReadOnlyList<string> honedSkillIds = [];
+            if (earnedSkillIds.Count > 0)
+            {
+                try
+                {
+                    honedSkillIds = (await progressClient.GetHonedSkillsAsync(member.Id, ct)).SkillIds;
+                }
+                catch (Exception exception)
+                {
+                    return Unavailable("Progress", exception, logger);
+                }
+            }
+
             var acknowledged = (await db.BagAcknowledgements.AsNoTracking()
                     .Where(a => a.MemberId == member.Id)
                     .Select(a => a.SkillId)
                     .ToListAsync(ct))
                 .ToHashSet(StringComparer.Ordinal);
 
-            var tools = earnedSkillIds
-                .Select(skillId => distinctSkills.First(skill => skill.Id == skillId))
-                .Select(skill => new EarnedToolDto(
-                    skill.Id,
-                    skill.Name,
-                    Honed: false,
-                    Acknowledged: acknowledged.Contains(skill.Id)))
-                .ToArray();
+            var tools = BagRules.Tools(earnedSkillIds, distinctSkills, honedSkillIds, acknowledged);
 
             return TypedResults.Ok(new BagDto(
                 member.Id,
@@ -116,6 +123,35 @@ public static class RosterEndpoints
                 member.Worn,
                 tools,
                 member.ShowAnswerOnWrong));
+        });
+
+        // Marks the drop as seen so the animation fires once. Idempotent: the client may retry.
+        // The skill is not checked against earned tools; the client only acknowledges what it saw.
+        api.MapPost("/members/{id}/bag/acknowledge", async Task<Results<NoContent, NotFound>> (
+            string id, AcknowledgeRequest request, RosterDbContext db, CancellationToken ct) =>
+        {
+            var memberExists = await db.Members.AsNoTracking().AnyAsync(m => m.Id == id, ct);
+            if (!memberExists)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var alreadyAcknowledged = await db.BagAcknowledgements
+                .AnyAsync(a => a.MemberId == id && a.SkillId == request.SkillId, ct);
+
+            if (!alreadyAcknowledged)
+            {
+                db.BagAcknowledgements.Add(new BagAcknowledgement
+                {
+                    MemberId = id,
+                    SkillId = request.SkillId,
+                    AcknowledgedAt = DateTimeOffset.UtcNow
+                });
+
+                await db.SaveChangesAsync(ct);
+            }
+
+            return TypedResults.NoContent();
         });
 
         // No auth in the POC: the demo member edits their own preference, but nothing is secret.

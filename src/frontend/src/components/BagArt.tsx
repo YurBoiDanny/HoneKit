@@ -5,13 +5,14 @@ type BagArtProps = {
   worn?: boolean;
   label: string;
   tools: EarnedToolDto[];
+  droppingSkillId?: string | null;
 };
 
 /**
  * The bag, drawn as layered SVG so a colour change is a token change.
  * Empty bag for the walking skeleton; tools and patches land in later slices.
  */
-export function BagArt({ colour, worn = false, label, tools }: BagArtProps) {
+export function BagArt({ colour, worn = false, label, tools, droppingSkillId = null }: BagArtProps) {
   return (
     <svg
       className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''}`}
@@ -94,39 +95,54 @@ export function BagArt({ colour, worn = false, label, tools }: BagArtProps) {
 
         return tool ? (
           <g key={tool.skillId} transform={`rotate(${tilt} ${x + 34} ${y + 23})`}>
-            <rect
-              x={x}
-              y={y}
-              width="68"
-              height="46"
-              rx="8"
-              fill={tool.honed ? 'var(--teal)' : 'var(--butter)'}
-              stroke="var(--ink)"
-              strokeOpacity="0.35"
-              strokeWidth="2"
-            />
-            <rect
-              x={x + 5}
-              y={y + 5}
-              width="58"
-              height="36"
-              rx="5"
-              fill="none"
-              stroke={tool.honed ? 'var(--paper)' : 'var(--ink)'}
-              strokeOpacity="0.35"
-              strokeWidth="1.5"
-              strokeDasharray="3 3"
-            />
-            <text
-              x={x + 34}
-              y={y + 28}
-              textAnchor="middle"
-              fontFamily="Inter, sans-serif"
-              fontSize="11"
-              fill={tool.honed ? 'var(--paper)' : 'var(--ink)'}
-            >
-              {tool.name}
-            </text>
+            <g className={`patch${tool.skillId === droppingSkillId ? ' patch--drop' : ''}`}>
+              <rect
+                x={x}
+                y={y}
+                width="68"
+                height="46"
+                rx="8"
+                fill={tool.honed ? 'var(--teal)' : 'var(--butter)'}
+                stroke="var(--ink)"
+                strokeOpacity="0.35"
+                strokeWidth="2"
+              />
+              <rect
+                x={x + 5}
+                y={y + 5}
+                width="58"
+                height="36"
+                rx="5"
+                fill="none"
+                stroke={tool.honed ? 'var(--paper)' : 'var(--ink)'}
+                strokeOpacity="0.35"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
+              />
+              <text
+                x={x + 34}
+                y={tool.honed ? y + 24 : y + 28}
+                textAnchor="middle"
+                fontFamily="Inter, sans-serif"
+                fontSize="11"
+                fill={tool.honed ? 'var(--paper)' : 'var(--ink)'}
+              >
+                {tool.name}
+              </text>
+              {tool.honed && (
+                <text
+                  x={x + 34}
+                  y={y + 37}
+                  textAnchor="middle"
+                  fontFamily="Inter, sans-serif"
+                  fontSize="8"
+                  fill="var(--paper)"
+                  opacity="0.9"
+                >
+                  honed
+                </text>
+              )}
+            </g>
           </g>
         ) : (
           <rect

@@ -26,6 +26,51 @@ public static class ProgressEndpoints
             return TypedResults.Ok(new CompletionsDto(id, lessonIds));
         });
 
+        // Honed is the member's best result per skill, so it survives a later plain run. Unknown
+        // members simply have no sessions; Progress does not own the member list.
+        api.MapGet("/members/{id}/honed-skills", async Task<Results<Ok<HonedSkillsDto>, ProblemHttpResult>> (
+            string id,
+            ProgressDbContext db,
+            ContentClient content,
+            ILoggerFactory loggerFactory,
+            CancellationToken ct) =>
+        {
+            var sessions = await db.Sessions.AsNoTracking()
+                .Where(session => session.MemberId == id)
+                .Select(session => new { session.DeckId, session.Honed })
+                .ToListAsync(ct);
+
+            var honedDeckIds = sessions
+                .Where(session => session.Honed)
+                .Select(session => session.DeckId)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            var skillIdByDeckId = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            try
+            {
+                foreach (var deckId in honedDeckIds)
+                {
+                    var deck = await content.GetDeckAsync(deckId, ct);
+                    if (deck is not null)
+                    {
+                        skillIdByDeckId[deckId] = deck.SkillId;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                return ContentUnavailable(exception, loggerFactory);
+            }
+
+            var skillIds = ProgressDomain.HonedSkillIds(
+                sessions.Select(session => (session.DeckId, session.Honed)),
+                skillIdByDeckId);
+
+            return TypedResults.Ok(new HonedSkillsDto(id, skillIds));
+        });
+
         // Start the deck: only the card types this slice can grade join the queue, in deck order.
         api.MapPost("/sessions", async Task<Results<Created<SessionDto>, NotFound, ProblemHttpResult>> (
             StartSessionRequest request,
@@ -323,7 +368,7 @@ public static class ProgressEndpoints
 
         return TypedResults.Problem(
             title: "Content is unavailable",
-            detail: "The session could not be graded because the Content service did not respond.",
+            detail: "Progress could not reach the Content service.",
             statusCode: StatusCodes.Status503ServiceUnavailable,
             extensions: new Dictionary<string, object?> { ["service"] = "content" });
     }

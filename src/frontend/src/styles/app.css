@@ -320,6 +320,30 @@
   filter: saturate(0.55) brightness(0.96);
 }
 
+.patch--drop {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: patch-drop 760ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes patch-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-60px) scale(1.1);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(6px) scale(1);
+  }
+  75% {
+    transform: translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* ---------- buttons and links ---------- */
 
 .button-primary {

@@ -110,6 +110,22 @@ public static class ProgressDomain
             ToolGranted: completed);
     }
 
+    /// <summary>
+    /// The skills a member has honed at least once. A later plain run never takes an earlier honed
+    /// result away, and decks Content no longer knows are ignored.
+    /// </summary>
+    public static IReadOnlyList<string> HonedSkillIds(
+        IEnumerable<(string DeckId, bool Honed)> sessions,
+        IReadOnlyDictionary<string, string> skillIdByDeckId) =>
+        sessions
+            .Where(session => session.Honed)
+            .Select(session => skillIdByDeckId.TryGetValue(session.DeckId, out var skillId) ? skillId : null)
+            .Where(skillId => !string.IsNullOrEmpty(skillId))
+            .Select(skillId => skillId!)
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(skillId => skillId, StringComparer.Ordinal)
+            .ToArray();
+
     public static DateTimeOffset DueAt(bool correct, DateTimeOffset now) =>
         now.Add(correct ? CorrectInterval : WrongInterval);
 }

@@ -29,7 +29,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Open the deck, deliberately get one wrong, then finish. Does the wrong-answer moment actually teach you the thing, and does the result screen tell you plainly whether you passed?
   Commit: `Answer fill-in-the-blank cards and finish a deck`
 
-- [ ] **3. The tool lands in your bag**
+- [x] **3. The tool lands in your bag**
   Becomes usable: Passing a deck earns the skill's tool; going home animates it into an otherwise empty bag, and it arrives plain or honed depending on how you ran the deck. The drop fires once, then stays put.
   Why now: This is the kernel's "oh, that's cool" beat, and it lands early enough that feedback can still shape the art, motion and rest of the member loop. It also proves the derived-tool decision — earned tools computed on read, never stored — before more features depend on it.
   PRD ref: `prd.md > The bag` (fills with tooling, plain vs honed, lands on returning home), `prd.md > States and Boundaries` (first use, normal use)
