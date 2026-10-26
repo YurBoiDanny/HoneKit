@@ -84,6 +84,30 @@ public static class RequirementEndpoints
             return TypedResults.Ok(summaries);
         });
 
+        api.MapDelete("/{id}", async Task<Results<NoContent, NotFound, ProblemHttpResult>> (
+            string id,
+            RequirementsDbContext db,
+            CancellationToken ct) =>
+        {
+            var set = await db.RequirementSets.FindAsync(new object?[] { id }, ct);
+            if (set is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (set.ConfirmedAt is not null)
+            {
+                return TypedResults.Problem(
+                    title: "This requirement set is confirmed",
+                    detail: "Confirmed sets are locked so a saved plan cannot lose its source. Duplicate it to make changes.",
+                    statusCode: StatusCodes.Status409Conflict);
+            }
+
+            db.RequirementSets.Remove(set);
+            await db.SaveChangesAsync(ct);
+            return TypedResults.NoContent();
+        });
+
         api.MapGet("/{id}", async Task<Results<Ok<RequirementSetDto>, NotFound, ProblemHttpResult>> (
             string id,
             RequirementsDbContext db,

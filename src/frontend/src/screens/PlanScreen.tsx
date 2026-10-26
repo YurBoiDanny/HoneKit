@@ -5,6 +5,7 @@ import {
   confirmRequirementSet,
   createManualRequirementSet,
   DEMO_ROLE,
+  deleteRequirementSet,
   fetchAiStatus,
   fetchRequirementSet,
   fetchRequirementSets,
@@ -64,6 +65,7 @@ export function PlanScreen() {
   const cancelled = useRef(false);
   const [ai, setAi] = useState<import('../api/types').AiStatusDto | null>(null);
   const [checking, setChecking] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAiStatus().then(setAi).catch(() => setAi(null));
@@ -165,6 +167,21 @@ export function PlanScreen() {
     }
   }
 
+  async function removeDraft(id: string) {
+    try {
+      await deleteRequirementSet(id);
+      setConfirmDelete(null);
+      if (draft?.id === id) {
+        setDraft(null);
+        setMode('parsed');
+      }
+      setErrors([]);
+      await queryClient.invalidateQueries({ queryKey: ['requirements'] });
+    } catch (exception) {
+      setErrors([exception instanceof Error ? exception.message : 'The draft was not deleted.']);
+    }
+  }
+
   async function loadSet(id: string) {
     setErrors([]);
     try {
@@ -243,10 +260,29 @@ export function PlanScreen() {
               <ul>
                 {sets.data.map((set) => (
                   <li key={set.id}>
-                    <button type="button" className="text-button" onClick={() => void loadSet(set.id)}>
+                    <button type="button" className="text-button saved-title" onClick={() => void loadSet(set.id)}>
                       {set.purpose || set.sourceName}
                     </button>
-                    <span>{set.confirmedAt ? 'confirmed' : 'draft'}</span>
+                    <span className="saved-state">{set.confirmedAt ? 'confirmed' : 'draft'}</span>
+                    {!set.confirmedAt &&
+                      (confirmDelete === set.id ? (
+                        <span className="draft-confirm">
+                          <button type="button" className="text-button" onClick={() => void removeDraft(set.id)}>
+                            Delete
+                          </button>
+                          <button type="button" className="text-button" onClick={() => setConfirmDelete(null)}>
+                            Keep
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="text-button draft-delete"
+                          onClick={() => setConfirmDelete(set.id)}
+                        >
+                          Delete
+                        </button>
+                      ))}
                   </li>
                 ))}
               </ul>

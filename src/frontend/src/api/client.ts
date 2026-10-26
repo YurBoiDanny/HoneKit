@@ -136,6 +136,9 @@ export const fetchAiStatus = (probe = false) =>
 
 export const fetchRequirementSets = () => request<RequirementSummaryDto[]>('/api/requirements');
 
+export const deleteRequirementSet = (id: string) =>
+  request<void>(`/api/requirements/${id}`, { method: 'DELETE' });
+
 export const fetchRequirementSet = (id: string) =>
   request<RequirementSetDto>(`/api/requirements/${id}`);
 

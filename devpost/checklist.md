@@ -156,6 +156,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
 
 ## Final Review
 
+- [x] Delete unconfirmed requirement drafts from the Meeting plan; confirmed sets are locked (409) — learner feedback, 26 Oct
 - [x] Revert the bag's animated opening and tool-filled hole; wrap long patch labels and make the chosen bag style visibly change the drawing — learner review, 26 Oct
 - [x] Add OpenCode Go as a first-class reader provider, with the Go endpoint and model documented — live call still waits on the learner's key
 - [ ] Final review complete — feedback resolved and learner confirms ready to ship

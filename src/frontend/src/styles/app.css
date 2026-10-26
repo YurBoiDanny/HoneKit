@@ -2649,3 +2649,38 @@
 .bag-art--style-sling .bag-sling-strap {
   display: block;
 }
+
+/* saved requirement drafts */
+.saved-sets li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.saved-sets .saved-title {
+  min-height: 36px;
+  margin: 0;
+  text-align: left;
+}
+
+.saved-sets .saved-state {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.saved-sets .draft-delete {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+}
+
+.draft-confirm {
+  display: flex;
+  gap: 8px;
+}
+
+.draft-confirm .text-button {
+  margin: 0;
+  font-size: 0.8rem;
+}
