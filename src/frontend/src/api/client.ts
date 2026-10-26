@@ -5,15 +5,31 @@ import type {
   CardDto,
   DeckSummaryDto,
   NextCardDto,
+  ParseFailureDto,
+  RequirementSetDto,
+  RequirementSummaryDto,
   SessionDto,
+  SkillDto,
   SessionResultDto,
   TeamBagDto,
   TeamDto,
+  UpdateRequirementSetRequest,
+  ManualRequirementSetRequest,
 } from './types';
 
 // The POC has seeded members instead of accounts; this is the demo member.
 export const DEMO_MEMBER_ID = 'danny';
 export const DEMO_ROLE = 'camera';
+
+export class ApiError extends Error {
+  readonly details: string[];
+
+  constructor(message: string, details: string[] = []) {
+    super(message);
+    this.name = 'ApiError';
+    this.details = details;
+  }
+}
 
 export interface DeckDetail {
   id: string;
@@ -24,20 +40,35 @@ export interface DeckDetail {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const isForm = init?.body instanceof FormData;
+
   const response = await fetch(path, {
     ...init,
-    headers: { Accept: 'application/json', ...(init?.body ? { 'Content-Type': 'application/json' } : {}) },
+    headers: {
+      Accept: 'application/json',
+      ...(init?.body && !isForm ? { 'Content-Type': 'application/json' } : {}),
+    },
   });
 
   if (!response.ok) {
     let detail = `${response.status} ${response.statusText}`;
+    let details: string[] = [];
+
     try {
-      const problem = (await response.json()) as { title?: string; detail?: string };
-      detail = problem.detail ?? problem.title ?? detail;
+      const body = (await response.json()) as
+        | string
+        | { title?: string; detail?: string; errors?: string[] };
+      if (typeof body === 'string') {
+        detail = body;
+      } else {
+        details = body.errors ?? [];
+        detail = body.detail ?? body.title ?? (details.join(' ') || detail);
+      }
     } catch {
       // keep the status line
     }
-    throw new Error(detail);
+
+    throw new ApiError(detail, details);
   }
 
   if (response.status === 204) {
@@ -88,6 +119,64 @@ export const acknowledgeTool = (memberId: string, skillId: string) =>
     method: 'POST',
     body: JSON.stringify({ skillId }),
   });
+
+export const fetchSkills = (role: string) =>
+  request<SkillDto[]>(`/api/content/roles/${role}/skills`);
+
+export const fetchRequirementSets = () => request<RequirementSummaryDto[]>('/api/requirements');
+
+export const fetchRequirementSet = (id: string) =>
+  request<RequirementSetDto>(`/api/requirements/${id}`);
+
+export const updateRequirementSet = (id: string, body: UpdateRequirementSetRequest) =>
+  request<RequirementSetDto>(`/api/requirements/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+
+export const confirmRequirementSet = (id: string) =>
+  post<RequirementSetDto>(`/api/requirements/${id}/confirm`, {});
+
+export const createManualRequirementSet = (body: ManualRequirementSetRequest) =>
+  post<RequirementSetDto>('/api/requirements/manual', body);
+
+export type BriefParseResult =
+  | { ok: true; set: RequirementSetDto }
+  | { ok: false; failure: ParseFailureDto };
+
+/** Multipart upload; returns the failure body intact so the manual form can keep the text. */
+export async function parseBrief(file: File | null, text: string): Promise<BriefParseResult> {
+  const form = new FormData();
+  if (file) {
+    form.append('file', file);
+  } else {
+    form.append('text', text);
+  }
+
+  const response = await fetch('/api/requirements', {
+    method: 'POST',
+    body: form,
+    headers: { Accept: 'application/json' },
+  });
+
+  if (response.ok) {
+    return { ok: true, set: (await response.json()) as RequirementSetDto };
+  }
+
+  const fallback: ParseFailureDto = {
+    detail: `${response.status} ${response.statusText}`,
+    sourceName: file?.name ?? 'Typed brief',
+    sourceText: text,
+    errors: [],
+  };
+
+  try {
+    const body = (await response.json()) as Partial<ParseFailureDto> & { detail?: string };
+    return { ok: false, failure: { ...fallback, ...body } };
+  } catch {
+    return { ok: false, failure: fallback };
+  }
+}
 
 export const setShowAnswerOnWrong = (memberId: string, showAnswerOnWrong: boolean) =>
   request<void>(`/api/roster/members/${memberId}/preferences`, {

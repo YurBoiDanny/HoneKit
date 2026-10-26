@@ -27,7 +27,9 @@ output.AppendLine("// </auto-generated>");
 output.AppendLine();
 
 var dtoTypes = assembly.GetTypes()
-    .Where(t => t is { IsClass: true, IsPublic: true, Namespace: "HoneKit.Contracts" } && t.Name.EndsWith("Dto", StringComparison.Ordinal))
+    .Where(t => t is { IsClass: true, IsPublic: true, Namespace: "HoneKit.Contracts" }
+        && (t.Name.EndsWith("Dto", StringComparison.Ordinal)
+            || t.Name.EndsWith("Request", StringComparison.Ordinal)))
     .OrderBy(t => t.Name, StringComparer.Ordinal);
 
 foreach (var type in dtoTypes)

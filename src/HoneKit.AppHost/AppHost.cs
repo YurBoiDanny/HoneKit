@@ -14,6 +14,12 @@ var localTargetPlatform = RuntimeInformation.ProcessArchitecture == Architecture
 // The compose environment is the deployment target; the AppHost stays the single source of truth.
 builder.AddDockerComposeEnvironment("compose");
 
+// The one place a model is called. The demo runs on the committed fixture; a live provider is a
+// configuration switch, forwarded to the Requirements container as-is.
+var aiProvider = Environment.GetEnvironmentVariable("AI__PROVIDER") ?? "fixture";
+var aiModel = Environment.GetEnvironmentVariable("AI__MODEL") ?? "gpt-5-mini";
+var aiEndpoint = Environment.GetEnvironmentVariable("AI__ENDPOINT") ?? "https://api.openai.com/v1";
+
 // Aspire 13.6.4 exposes AddProject<T>() (project model V1); there is no AddDotnetProject() in this
 // package. The generated Projects.* metadata classes drive the typed overload for all five services.
 // The volume mounts on the app user's home directory: a fresh named volume inherits that
@@ -38,7 +44,14 @@ var roster = builder.AddProject<Projects.HoneKit_Roster>("roster", launchProfile
     .WaitFor(progress);
 
 var requirements = builder.AddProject<Projects.HoneKit_Requirements>("requirements", launchProfileName: "http")
-    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform);
+    .WithVolume("requirements-data", target: "/home/app", env: "DATA_DIR")
+    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform)
+    .WithReference(content)
+    .WaitFor(content)
+    .WithEnvironment("AI__PROVIDER", aiProvider)
+    .WithEnvironment("AI__MODEL", aiModel)
+    .WithEnvironment("AI__ENDPOINT", aiEndpoint)
+    .WithEnvironment("AI__APIKEY", "${AI__APIKEY}");
 
 var recommendations = builder.AddProject<Projects.HoneKit_Recommendations>("recommendations", launchProfileName: "http")
     .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform);

@@ -89,11 +89,27 @@ services:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${REQUIREMENTS_PORT}"
+      DATA_DIR: "/home/app"
+      CONTENT_HTTP: "http://content:${CONTENT_PORT}"
+      services__content__http__0: "http://content:${CONTENT_PORT}"
+      CONTENT_HTTPS: "https://content:${CONTENT_PORT}"
+      AI__PROVIDER: "fixture"
+      AI__MODEL: "gpt-5-mini"
+      AI__ENDPOINT: "https://api.openai.com/v1"
+      AI__APIKEY: "${AI__APIKEY}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "requirements"
     expose:
       - "${REQUIREMENTS_PORT}"
+    volumes:
+      - type: "volume"
+        target: "/home/app"
+        source: "requirements-data"
+        read_only: false
+    depends_on:
+      content:
+        condition: "service_started"
     networks:
       - "aspire"
   recommendations:
@@ -151,4 +167,6 @@ volumes:
   progress-data:
     driver: "local"
   roster-data:
+    driver: "local"
+  requirements-data:
     driver: "local"

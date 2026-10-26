@@ -8,6 +8,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.13" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
+    <PackageReference Include="OpenAI" Version="2.14.0" />
+    <PackageReference Include="PdfPig" Version="0.1.16" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -15,5 +19,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The recorded fixture parse is data, not code: committed, diffable, and copied beside the app. -->
+    <Content Update="Data\parsed-requirements.fixture.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

@@ -84,6 +84,65 @@ public sealed record TeamBagDto(
     IReadOnlyList<TeamToolDto> Tools,
     string Wear);
 
+// ---- meeting requirements ----------------------------------------------------------------
+
+public sealed record RequirementSkillInputDto(
+    string SkillId,
+    double MinLevel,
+    int Headcount,
+    string Rationale);
+
+public sealed record RequirementSkillDto(
+    string SkillId,
+    string Name,
+    double MinLevel,
+    int Headcount,
+    string Rationale);
+
+public sealed record RequirementSetDto(
+    string Id,
+    string SourceName,
+    string SourceText,
+    string Purpose,
+    string Criticality,
+    string Provider,
+    string Model,
+    DateTimeOffset ParsedAt,
+    DateTimeOffset? ConfirmedAt,
+    bool Edited,
+    IReadOnlyList<RequirementSkillDto> Skills,
+    IReadOnlyList<string> OutsideRole);
+
+public sealed record RequirementSummaryDto(
+    string Id,
+    string SourceName,
+    string Purpose,
+    string Provider,
+    DateTimeOffset ParsedAt,
+    DateTimeOffset? ConfirmedAt);
+
+public sealed record UpdateRequirementSetRequest(
+    string Purpose,
+    string Criticality,
+    IReadOnlyList<RequirementSkillInputDto> Skills,
+    IReadOnlyList<string> OutsideRole);
+
+public sealed record ManualRequirementSetRequest(
+    string Purpose,
+    string Criticality,
+    IReadOnlyList<RequirementSkillInputDto> Skills,
+    IReadOnlyList<string> OutsideRole,
+    string? SourceName,
+    string? SourceText);
+
+// Returned when a brief cannot be parsed. sourceText lets the leader keep their document
+// and type the requirements instead of uploading it again.
+public sealed record ParseFailureDto(
+    string Detail,
+    string SourceName,
+    string SourceText,
+    IReadOnlyList<string> Errors);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

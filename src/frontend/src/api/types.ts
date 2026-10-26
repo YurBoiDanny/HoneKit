@@ -3,6 +3,15 @@
 // Do not edit. Run `npm run gen:contracts` in src/frontend after changing a contract.
 // </auto-generated>
 
+export interface AcknowledgeRequest {
+  skillId: string;
+}
+
+export interface AttemptRequest {
+  cardId: string;
+  answer: string;
+}
+
 export interface AttemptResultDto {
   correct: boolean;
   correctChoiceId: string | null;
@@ -22,6 +31,11 @@ export interface BagDto {
   worn: boolean;
   tools: EarnedToolDto[];
   showAnswerOnWrong: boolean;
+}
+
+export interface BagStyleRequest {
+  colour: string;
+  style: string;
 }
 
 export interface BagWallDto {
@@ -86,6 +100,10 @@ export interface EarnedToolDto {
   acknowledged: boolean;
 }
 
+export interface FinishSessionRequest {
+  exitedEarly: boolean;
+}
+
 export interface HonedSkillsDto {
   memberId: string;
   skillIds: string[];
@@ -96,6 +114,15 @@ export interface LessonDto {
   skillId: string;
   ordinal: number;
   title: string;
+}
+
+export interface ManualRequirementSetRequest {
+  purpose: string;
+  criticality: string;
+  skills: RequirementSkillInputDto[];
+  outsideRole: string[];
+  sourceName: string | null;
+  sourceText: string | null;
 }
 
 export interface MemberDto {
@@ -114,11 +141,61 @@ export interface NextCardDto {
   remaining: number;
 }
 
+export interface ParseFailureDto {
+  detail: string;
+  sourceName: string;
+  sourceText: string;
+  errors: string[];
+}
+
+export interface PreferencesRequest {
+  showAnswerOnWrong: boolean;
+}
+
 export interface RectDto {
   x: number;
   y: number;
   width: number;
   height: number;
+}
+
+export interface RequirementSetDto {
+  id: string;
+  sourceName: string;
+  sourceText: string;
+  purpose: string;
+  criticality: string;
+  provider: string;
+  model: string;
+  parsedAt: string;
+  confirmedAt: string | null;
+  edited: boolean;
+  skills: RequirementSkillDto[];
+  outsideRole: string[];
+}
+
+export interface RequirementSkillDto {
+  skillId: string;
+  name: string;
+  minLevel: number;
+  headcount: number;
+  rationale: string;
+}
+
+export interface RequirementSkillInputDto {
+  skillId: string;
+  minLevel: number;
+  headcount: number;
+  rationale: string;
+}
+
+export interface RequirementSummaryDto {
+  id: string;
+  sourceName: string;
+  purpose: string;
+  provider: string;
+  parsedAt: string;
+  confirmedAt: string | null;
 }
 
 export interface SessionDto {
@@ -148,6 +225,11 @@ export interface SkillDto {
   lessonCount: number;
 }
 
+export interface StartSessionRequest {
+  memberId: string;
+  deckId: string;
+}
+
 export interface TeamBagDto {
   role: string;
   name: string;
@@ -168,5 +250,12 @@ export interface TeamToolDto {
   filledLessons: number;
   totalLessons: number;
   percent: number;
+}
+
+export interface UpdateRequirementSetRequest {
+  purpose: string;
+  criticality: string;
+  skills: RequirementSkillInputDto[];
+  outsideRole: string[];
 }
 

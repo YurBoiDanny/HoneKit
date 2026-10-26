@@ -69,7 +69,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Land on the team bag and read the crew's health without clicking anything. Does one glance tell you where the team is thin, and does switching to your own bag still feel like the same object?
   Commit: `Add the team bag and leader home`
 
-- [ ] **7. The brief becomes requirements**
+- [x] **7. The brief becomes requirements**
   Becomes usable: A leader uploads `samples/cx-rollout-2026-10-17.pdf` (or pastes text), watches it being read, then edits the parsed requirements — skills, minimum level, headcount — beside the source. PA, streaming and the other non-camera asks appear under "Outside this role — not planned here". With no model available, the same screen falls back to a prefilled manual form.
   Why now: It is the only place a model is called, so it gets its own slice and its own failure path. It also needs the skill catalogue, which slice 1 already serves — one dependency, not two.
   PRD ref: `prd.md > Meeting requirements and recommendations` (upload and parse, closed vocabulary, outside-role services, everything editable, provenance), `prd.md > States and Boundaries` (parse in progress, parse failed)
