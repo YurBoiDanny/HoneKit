@@ -26,7 +26,7 @@ export default defineConfig({
       '/api/content': apiProxy('content', 'content', 'http://localhost:5301'),
       '/api/progress': apiProxy('progress', 'progress', 'http://localhost:5302'),
       '/api/roster': apiProxy('roster', 'roster', 'http://localhost:5303'),
-      '/api/requirements': apiPass('requirements', 'http://localhost:5304'),
+      '/api/requirements': { ...apiPass('requirements', 'http://localhost:5304'), timeout: 100_000, proxyTimeout: 100_000 },
       '/api/recommendations': apiPass('recommendations', 'http://localhost:5305'),
       '/api/plans': apiPass('recommendations', 'http://localhost:5305'),
     },

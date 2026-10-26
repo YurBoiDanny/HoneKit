@@ -16,7 +16,7 @@ namespace HoneKit.Requirements.Parsing;
 /// </summary>
 public sealed class RequirementParser(IConfiguration configuration, ILogger<RequirementParser> logger)
 {
-    public const int TimeoutSeconds = 30;
+    public const int TimeoutSeconds = 90;
 
     private const string UnavailableDetail = "Reading is unavailable right now — type the requirements instead.";
 

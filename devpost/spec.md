@@ -472,7 +472,7 @@ Authorization: Bearer {key}
 
 `Microsoft.Extensions.AI` wraps this as `chatClient.GetResponseAsync<ParsedRequirements>(...)`; the
 OpenAI SDK adapter handles the envelope. Rate limits and exact pricing were **not** verified and
-don't matter at this volume; the only real limit is a timeout, which we set at 30 s.
+don't matter at this volume; the only real limit is a timeout, which we set at 90 s.
 
 No other external services. No database server, no message broker, no auth provider. Container base
 images come from the public registries (`mcr.microsoft.com/dotnet/aspnet:10.0`,
@@ -494,7 +494,7 @@ records that a redaction pass is possible but not built.
   with the textarea already focused.
 - **A service is down** → the page that needs it shows a labelled partial state ("Progress is
   unavailable — showing last known levels"), and the rest of the app keeps working.
-- **Slow model (over 30 s)** → cancelled with a plain message and the manual form offered; no
+- **Slow model (over 90 s)** → cancelled with a plain message and the manual form offered; no
   spinner indefinitely.
 - **Empty states everywhere they can occur** — empty bag, no saved plans, no requirements yet, and
   a teammate with nothing earned. Each is an invitation, not an error.
