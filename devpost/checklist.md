@@ -99,7 +99,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Build one small deck yourself and assign it. Is the editor small enough to finish a deck without instructions, or is something you'd need every time missing?
   Commit: `Let a leader author and assign a deck`
 
-- [ ] **10. Polish, failure states, and the demo run**
+- [x] **10. Polish, failure states, and the demo run**
   Becomes usable: The app is the thing the plan describes — layered bag art with tools and sewn patches, the drop and unzip motion, phone-to-desktop responsive layout, labelled partial states when a service is down, empty states everywhere, and the 16-step journey running end to end in the deployed stack.
   Why now: Art, motion and failure behaviour need real content and real states to style, and polishing before them would mean polishing placeholders. It is also the last chance to fix what the demo run exposes before submission.
   PRD ref: `prd.md > Look and Feel`, `prd.md > Screens and Layout` (responsive), `prd.md > States and Boundaries` (all states)
@@ -135,3 +135,4 @@ Activity mode:
 - Frontend published as a hand-written nginx image instead of `PublishAsStaticWebsite` — the Aspire static-website publisher reverse-proxies only one backend, and this app has five services the browser must reach. The spec's documented fallback applies: only the frontend is ejected; the five .NET services still come from the generated compose, and the AppHost stays the single model.
 - A completed deck grants its tool even when first-try accuracy is below the 80% pass line — otherwise the scripted one-wrong run on a four-card deck (75%) could never produce the tool drop the demo depends on. Pass stays the quality label, honed stays ≥90%, and leaving early grants nothing.
 - Seeded a small `Switching Essentials` deck so the switching gap has something to send in one action. The original single framing deck left "gaps become work" with no deck to assign.
+- Compose starts services on `service_started`, not container healthchecks — Aspire's compose publisher did not emit healthchecks for the project resources. The pages retry once and show a labelled state on a cold start instead of the frontend gating on health.

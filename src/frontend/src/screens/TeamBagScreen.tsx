@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { BagArt } from '../components/BagArt';
 import { BagSwitch } from '../components/BagSwitch';
 import { CrewRail } from '../components/CrewRail';
@@ -84,6 +85,10 @@ export function TeamBagScreen() {
                     ))}
                   </ul>
                 </details>
+
+                <Link className="button-primary team-wall-link" to="/crew">
+                  Open the bag wall
+                </Link>
               </div>
             </>
           )}

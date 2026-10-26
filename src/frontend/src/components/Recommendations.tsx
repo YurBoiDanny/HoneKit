@@ -301,21 +301,25 @@ export function Recommendations({ requirementId }: RecommendationsProps) {
             </div>
           </section>
 
-          {plans.data && plans.data.length > 0 && (
+          {plans.isSuccess && (
             <section className="rec-block">
               <h3>Saved plans</h3>
-              <ul className="saved-plans">
-                {plans.data.map((plan) => (
-                  <li key={plan.id}>
-                    <button type="button" className="text-button" onClick={() => void openPlan(plan.id)}>
-                      {plan.purpose}
-                    </button>
-                    <span>
-                      {plan.strategy}, {plan.memberCount} people
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              {plans.data.length === 0 ? (
+                <p className="quiet-load">No plans saved yet.</p>
+              ) : (
+                <ul className="saved-plans">
+                  {plans.data.map((plan) => (
+                    <li key={plan.id}>
+                      <button type="button" className="text-button" onClick={() => void openPlan(plan.id)}>
+                        {plan.purpose}
+                      </button>
+                      <span>
+                        {plan.strategy}, {plan.memberCount} people
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
               {viewedPlan && (
                 <div className="rec-viewed">

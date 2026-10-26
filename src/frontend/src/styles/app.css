@@ -39,6 +39,7 @@
 
 .nav a,
 .nav span {
+  padding: 8px 0;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -92,7 +93,7 @@
 .bag-switch a {
   display: inline-flex;
   align-items: center;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 14px;
   border-radius: 7px;
   color: var(--ink-soft);
@@ -639,7 +640,7 @@
 .patch--drop {
   transform-box: fill-box;
   transform-origin: 50% 50%;
-  animation: patch-drop 760ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: patch-drop 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes patch-drop {
@@ -806,25 +807,21 @@
 }
 
 .nudge--play {
-  animation: nudge-in 900ms ease-out;
+  animation: nudge-in 300ms ease-out;
 }
 
 @keyframes nudge-in {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.9);
+    transform: translateY(8px) scale(0.92);
   }
-  30% {
+  35% {
     opacity: 1;
-    transform: translateY(-6px) scale(1);
-  }
-  75% {
-    opacity: 1;
-    transform: translateY(-2px) scale(1);
+    transform: translateY(-4px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-10px) scale(1);
+    transform: translateY(-9px) scale(1);
   }
 }
 
@@ -1014,6 +1011,13 @@
   border: 2px solid var(--ink);
   border-radius: 3px;
   background: var(--paper-raised);
+}
+
+/* Enlarge the grab area without changing the visual size. */
+.frame-handle::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
 }
 
 .frame-handle--nw {
@@ -1555,7 +1559,7 @@
 }
 
 .strategy-switch button {
-  min-height: 42px;
+  min-height: 44px;
   padding: 0 14px;
   border: 0;
   border-radius: 7px;
@@ -1834,4 +1838,8 @@
 
 .req-panel .strategy-switch {
   margin-bottom: 16px;
+}
+
+.team-wall-link {
+  margin-top: 16px;
 }
