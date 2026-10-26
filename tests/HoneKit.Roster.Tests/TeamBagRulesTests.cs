@@ -35,14 +35,14 @@ public sealed class TeamBagRulesTests
     {
         var tools = TeamBagRules.Tools(
             completionsPerMember: [["framing-1", "framing-2"], ["framing-2"]],
-            lessons: FramingLessons.Append(new LessonDto("gear-1", "gear", 1, "Build the camera")),
-            skills: [FramingSkill, new SkillDto("gear", "camera", "Gear", 2)],
+            lessons: FramingLessons.Append(new LessonDto("setup-1", "setup", 1, "Build the camera")),
+            skills: [FramingSkill, new SkillDto("setup", "camera", "Setup", 2)],
             memberCount: 2);
 
-        var gear = tools.Single(tool => tool.SkillId == "gear");
-        Assert.Equal(0, gear.FilledLessons);
-        Assert.Equal(4, gear.TotalLessons);
-        Assert.Equal(0, gear.Percent);
+        var setup = tools.Single(tool => tool.SkillId == "setup");
+        Assert.Equal(0, setup.FilledLessons);
+        Assert.Equal(4, setup.TotalLessons);
+        Assert.Equal(0, setup.Percent);
     }
 
     [Fact]
@@ -81,40 +81,41 @@ public sealed class TeamBagRulesTests
         // The Progress seed, member by member.
         List<IReadOnlyCollection<string>> completions =
         [
-            ["framing-1", "framing-2", "gear-1", "gear-2", "operation-1", "operation-2", "switching-1"],
-            ["framing-1", "gear-1", "gear-2", "operation-1", "switching-1"],
-            ["framing-1", "gear-1", "operation-1", "operation-2"],
+            ["framing-1", "framing-2", "setup-1", "setup-2", "tracking-1", "tracking-2", "presets-traces-1"],
+            ["framing-1", "setup-1", "setup-2", "tracking-1", "presets-traces-1"],
+            ["framing-1", "setup-1", "tracking-1", "tracking-2"],
             ["framing-1", "framing-2"],
-            ["switching-1"],
+            ["presets-traces-1"],
             []
         ];
 
         LessonDto[] lessons =
         [
             .. FramingLessons,
-            new("gear-1", "gear", 1, "Build the camera"),
-            new("gear-2", "gear", 2, "Know the kit"),
-            new("operation-1", "operation", 1, "Run the service"),
-            new("operation-2", "operation", 2, "Recover on the fly"),
-            new("switching-1", "switching", 1, "Cut with intent"),
-            new("switching-2", "switching", 2, "Switch under pressure")
+            new("setup-1", "setup", 1, "Build the camera"),
+            new("setup-2", "setup", 2, "The floor camera"),
+            new("tracking-1", "tracking", 1, "Hold the subject"),
+            new("tracking-2", "tracking", 2, "Follow with intent"),
+            new("presets-traces-1", "presets-traces", 1, "Presets on the Bolin"),
+            new("presets-traces-2", "presets-traces", 2, "Traces and tracking")
         ];
 
         SkillDto[] skills =
         [
             new("framing", "camera", "Framing", 2),
-            new("gear", "camera", "Gear", 2),
-            new("operation", "camera", "Operation", 2),
-            new("switching", "camera", "Switching", 2)
+            new("setup", "camera", "Setup", 2),
+            new("tracking", "camera", "Tracking", 2),
+            new("presets-traces", "camera", "Presets & Traces", 2)
         ];
 
         var tools = TeamBagRules.Tools(completions, lessons, skills, memberCount: 6);
 
-        Assert.Equal(["Framing", "Gear", "Operation", "Switching"], tools.Select(tool => tool.Name));
+        // Sorted by name, which is how the bag and the team bag show them.
+        Assert.Equal(["Framing", "Presets & Traces", "Setup", "Tracking"], tools.Select(tool => tool.Name));
         Assert.Equal((6, 12, 50.0), (tools[0].FilledLessons, tools[0].TotalLessons, tools[0].Percent));
-        Assert.Equal((5, 12, 42.0), (tools[1].FilledLessons, tools[1].TotalLessons, tools[1].Percent));
+        Assert.Equal((3, 12, 25.0), (tools[1].FilledLessons, tools[1].TotalLessons, tools[1].Percent));
         Assert.Equal((5, 12, 42.0), (tools[2].FilledLessons, tools[2].TotalLessons, tools[2].Percent));
-        Assert.Equal((3, 12, 25.0), (tools[3].FilledLessons, tools[3].TotalLessons, tools[3].Percent));
+        Assert.Equal((5, 12, 42.0), (tools[3].FilledLessons, tools[3].TotalLessons, tools[3].Percent));
 
         var filled = tools.Sum(tool => tool.FilledLessons);
         var total = tools.Sum(tool => tool.TotalLessons);

@@ -143,3 +143,18 @@ reasons:
   this weekend.
 - **A service per feature.** Two or three seams chosen so the distribution is *justified* — not
   a dozen services holding nothing.
+
+## Revision after the first build (26 Oct 2026)
+
+The learner's final-review pass reshaped the content and the bag interaction, within the same POC:
+
+- **Four skills, renamed:** Framing, Setup, Tracking, and Presets & Traces replace Framing, Gear,
+  Operation and Switching. The seed spread, requirements, recommendations and decks move with them.
+- **Two more card types:** an **ordering** card built from the crew's real camera checklist, and a
+  **Bolin PTZ board** for recalling presets and playing traces. These join the image fill-in-the-blank
+  and framing scenario.
+- **The bag is an object you open:** clicking it unzips, the room darkens, the camera pushes in, and
+  a full-screen hub puts the bag in the centre with angular options around it.
+- **The brief reader is visible:** the Meeting plan names the provider and whether it is ready.
+
+Everything else in **The POC Boundary** holds.

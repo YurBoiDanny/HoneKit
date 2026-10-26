@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   ApiError,
   confirmRequirementSet,
   createManualRequirementSet,
   DEMO_ROLE,
+  fetchAiStatus,
   fetchRequirementSet,
   fetchRequirementSets,
   fetchSkills,
@@ -61,6 +62,23 @@ export function PlanScreen() {
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const cancelled = useRef(false);
+  const [ai, setAi] = useState<import('../api/types').AiStatusDto | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  useEffect(() => {
+    fetchAiStatus().then(setAi).catch(() => setAi(null));
+  }, []);
+
+  async function checkReader() {
+    setChecking(true);
+    try {
+      setAi(await fetchAiStatus(true));
+    } catch {
+      setAi(null);
+    } finally {
+      setChecking(false);
+    }
+  }
 
   async function readBrief() {
     if (!file && !text.trim()) {
@@ -167,6 +185,16 @@ export function PlanScreen() {
           confirm it.
         </p>
       </header>
+
+      {ai && (
+        <div className={`ai-status ai-status--${ai.mode}`}>
+          <span className="ai-dot" aria-hidden="true" />
+          <span>{ai.detail}</span>
+          <button type="button" className="text-button" onClick={() => void checkReader()} disabled={checking}>
+            {checking ? 'Checking…' : 'Check the reader'}
+          </button>
+        </div>
+      )}
 
       <div className="plan-grid">
         <section className="brief-panel" aria-labelledby="brief-heading">

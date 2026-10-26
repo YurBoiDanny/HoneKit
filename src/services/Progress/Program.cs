@@ -6,10 +6,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Slice 2 added sessions, attempts and reviews. EnsureCreated only ever creates a missing file, so
-// the file name carries the schema version: a container rebuilt onto a slice-1 volume starts a
-// fresh seeded database instead of querying tables that are not there. Seed data only, nothing to lose.
-builder.AddServiceSqlite<ProgressDbContext>("progress-v2.db");
+// The file name carries the schema and seed version. EnsureCreated only ever creates a missing file,
+// so a container rebuilt onto an older volume starts fresh instead of mixing old skill ids with the
+// new catalogue. Seed data only, nothing to lose.
+builder.AddServiceSqlite<ProgressDbContext>("progress-v3.db");
 
 builder.Services.AddHttpClient<ContentClient>(client => client.BaseAddress = new Uri("http://content"));
 

@@ -1,4 +1,5 @@
 import type {
+  AiStatusDto,
   AttemptResultDto,
   BagDto,
   BagWallDto,
@@ -129,6 +130,9 @@ export const acknowledgeTool = (memberId: string, skillId: string) =>
 
 export const fetchSkills = (role: string) =>
   request<SkillDto[]>(`/api/content/roles/${role}/skills`);
+
+export const fetchAiStatus = (probe = false) =>
+  request<AiStatusDto>(`/api/requirements/ai-status${probe ? '?probe=true' : ''}`);
 
 export const fetchRequirementSets = () => request<RequirementSummaryDto[]>('/api/requirements');
 

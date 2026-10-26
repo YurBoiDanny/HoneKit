@@ -655,3 +655,18 @@ publish time. Sources: [Aspire Docker Compose deployment](https://aspire.dev/dep
 4. **The Vite publish path is experimental.** `PublishAsStaticWebsite` carries
    `ASPIREJAVASCRIPT001` in 13.6. Slice 1 proves it works end to end; if it doesn't, eject only the
    frontend into a small hand-written service and leave the five .NET services generated.
+
+## Revision after the first build (26 Oct 2026)
+
+- **Card types:** `fill-in-the-blank`, `framing`, `ordering`, `ptz`. Content stores the ordered step
+  list (or the preset/trace action) and the expected answer; Progress grades the sequence and the
+  board actions with pure rules and returns which step/action was wrong.
+- **Skills:** `framing`, `setup`, `tracking`, `presets-traces`. The seeded completions preserve the
+  19/48 spread; the requirements fixture maps to framing/setup/tracking and the demo adds
+  `presets-traces`.
+- **Bag hub:** a full-screen React overlay with a layered bag SVG (`idle`/`open` states), a zipper
+  and flap transition, a scale push-in, and paper-cut menu cards. Focus trap, Esc, arrow/Tab order,
+  `prefers-reduced-motion` crossfade. Personalization is available only on your own bag.
+- **AI status:** `GET /api/requirements/ai-status` returns provider, model, endpoint, key-present,
+  fixture/live/unavailable, the last parse outcome, and an optional live probe. The key is never
+  returned and never committed.

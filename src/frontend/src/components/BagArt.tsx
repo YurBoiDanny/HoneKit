@@ -9,6 +9,7 @@ type BagArtProps = {
   droppingSkillId?: string | null;
   /** Team-bag mode: percent filled per skill, drawn as a gauge in the patch socket. */
   fills?: Record<string, number>;
+  state?: 'idle' | 'open';
 };
 
 /**
@@ -22,11 +23,12 @@ export function BagArt({
   tools,
   droppingSkillId = null,
   fills,
+  state = 'idle',
 }: BagArtProps) {
   const clipPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   return (
     <svg
-      className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''}`}
+      className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''} bag-art--${state}`}
       viewBox="0 0 460 540"
       role="img"
       aria-label={label}
@@ -59,21 +61,56 @@ export function BagArt({
       <ellipse cx="230" cy="133" rx="95" ry="13" fill="#2a211b" opacity="0.85" />
       <path d="M126 128 C170 146 290 146 334 128" fill="none" stroke="var(--bag-edge)" strokeWidth="2.5" />
 
-      {/* flap, folded forward */}
-      <path
-        d="M126 146 C176 164 284 164 334 146 L326 300 C282 318 178 318 134 300 Z"
-        fill="var(--bag-light)"
-        stroke="var(--bag-edge)"
-        strokeWidth="2.5"
-      />
-      <path
-        d="M142 162 C186 177 274 177 318 162 L311 286 C270 301 190 301 149 286 Z"
-        fill="none"
-        stroke="var(--ink)"
-        strokeOpacity="0.22"
-        strokeWidth="2"
-        strokeDasharray="5 6"
-      />
+      {/* tools poking out of the opening */}
+      <g className="bag-tool-tops">
+        {tools.slice(0, 4).map((tool, index) => {
+          const x = 150 + index * 42;
+          return (
+            <g key={tool.skillId} transform={`translate(${x} 88)`}>
+              <rect
+                x="0"
+                y="0"
+                width="26"
+                height="38"
+                rx="5"
+                fill={tool.honed ? 'var(--teal)' : 'var(--brass)'}
+                stroke="var(--ink)"
+                strokeOpacity="0.3"
+              />
+              <circle cx="13" cy="15" r="6" fill="var(--paper-raised)" opacity="0.85" />
+              <circle cx="13" cy="15" r="3" fill="var(--ink)" opacity="0.55" />
+              <rect x="9" y="26" width="8" height="4" rx="2" fill="var(--paper-raised)" opacity="0.7" />
+            </g>
+          );
+        })}
+      </g>
+
+      {/* flap, folded forward, with a zipper */}
+      <g className="bag-flap">
+        <path
+          d="M126 146 C176 164 284 164 334 146 L326 300 C282 318 178 318 134 300 Z"
+          fill="var(--bag-light)"
+          stroke="var(--bag-edge)"
+          strokeWidth="2.5"
+        />
+        <path
+          d="M142 162 C186 177 274 177 318 162 L311 286 C270 301 190 301 149 286 Z"
+          fill="none"
+          stroke="var(--ink)"
+          strokeOpacity="0.22"
+          strokeWidth="2"
+          strokeDasharray="5 6"
+        />
+        <path
+          d="M136 158 C186 176 274 176 324 158"
+          fill="none"
+          stroke="var(--ink)"
+          strokeOpacity="0.45"
+          strokeWidth="3"
+          strokeDasharray="2 4"
+        />
+        <rect x="300" y="153" width="12" height="18" rx="4" fill="var(--brass)" stroke="var(--ink)" strokeOpacity="0.3" />
+      </g>
 
       {/* buckle and strap */}
       <rect x="212" y="250" width="36" height="94" rx="10" fill="var(--bag-deep)" />

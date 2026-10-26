@@ -18,6 +18,45 @@ public static class RequirementEndpoints
     {
         var api = app.MapGroup("/api/requirements");
 
+        // What the brief reader is and whether it can work; ?probe=true makes one tiny live call.
+        api.MapGet("/ai-status", async Task<Ok<AiStatusDto>> (
+            IConfiguration configuration,
+            RequirementParser parser,
+            bool? probe,
+            CancellationToken ct) =>
+        {
+            var settings = AiSettings.From(configuration);
+            var status = AiStatusRules.Evaluate(settings.Provider, settings.Model, settings.ApiKey);
+
+            if (probe == true && AiStatusRules.CanProbe(status.Mode))
+            {
+                var (ok, reply) = await parser.ProbeAsync(ct);
+
+                status = ok
+                    ? status with
+                    {
+                        Detail = string.IsNullOrWhiteSpace(reply)
+                            ? "Live check succeeded: the reader answered."
+                            : $"Live check succeeded: the reader answered {Shorten(reply)}."
+                    }
+                    : status with
+                    {
+                        Mode = AiStatusRules.Unavailable,
+                        Detail = "Live check failed: the reader did not answer. Type the requirements instead."
+                    };
+            }
+
+            return TypedResults.Ok(new AiStatusDto(
+                settings.Provider,
+                settings.Model,
+                settings.Endpoint,
+                status.KeyConfigured,
+                status.Mode,
+                parser.LastParseAt,
+                parser.LastParseOk,
+                status.Detail));
+        });
+
         // Upload: a file or pasted text. Any failure carries the source text back so the leader can
         // keep their document and type the requirements instead.
         api.MapPost("", ReadBriefAsync)
@@ -387,6 +426,12 @@ public static class RequirementEndpoints
             .ToList(),
         OutsideRole = (request.OutsideRole ?? []).ToList()
     };
+
+    private static string Shorten(string reply)
+    {
+        var single = string.Join(' ', reply.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+        return single.Length <= 60 ? single : $"{single[..60]}...";
+    }
 
     private static JsonHttpResult<ParseFailureDto> Failure(
         int statusCode,

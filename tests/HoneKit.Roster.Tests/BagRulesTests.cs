@@ -10,7 +10,7 @@ public sealed class BagRulesTests
     private static readonly SkillDto[] Skills =
     [
         new("framing", "camera", "Framing", 2),
-        new("gear", "camera", "Gear", 2),
+        new("setup", "camera", "Setup", 2),
         new("empty", "camera", "Empty skill", 0)
     ];
 
@@ -18,26 +18,26 @@ public sealed class BagRulesTests
     [
         new("framing-1", "framing", 1, "Reading the frame"),
         new("framing-2", "framing", 2, "Light and colour"),
-        new("gear-1", "gear", 1, "Build the camera"),
-        new("gear-2", "gear", 2, "Know the kit")
+        new("setup-1", "setup", 1, "Build the camera"),
+        new("setup-2", "setup", 2, "The floor camera")
     ];
 
     [Fact]
     public void Every_lesson_complete_earns_the_skill()
     {
         var earned = BagRules.EarnedSkillIds(
-            ["framing-1", "framing-2", "gear-1", "gear-2"],
+            ["framing-1", "framing-2", "setup-1", "setup-2"],
             Lessons,
             Skills);
 
-        Assert.Equal(new[] { "framing", "gear" }, earned);
+        Assert.Equal(new[] { "framing", "setup" }, earned);
     }
 
     [Fact]
     public void One_lesson_short_does_not_earn_the_skill()
     {
         var earned = BagRules.EarnedSkillIds(
-            ["framing-1", "framing-2", "gear-1"],
+            ["framing-1", "framing-2", "setup-1"],
             Lessons,
             Skills);
 
@@ -66,12 +66,12 @@ public sealed class BagRulesTests
     [Fact]
     public void Honed_and_acknowledged_decorate_only_earned_tools()
     {
-        // gear is honed in Progress but the member has not earned it, so it must not appear.
+        // setup is honed in Progress but the member has not earned it, so it must not appear.
         var tools = BagRules.Tools(
             earnedSkillIds: ["framing"],
             skills: Skills,
-            honedSkillIds: ["framing", "gear"],
-            acknowledgedSkillIds: ["framing", "gear"]);
+            honedSkillIds: ["framing", "setup"],
+            acknowledgedSkillIds: ["framing", "setup"]);
 
         var tool = Assert.Single(tools);
         Assert.Equal("framing", tool.SkillId);
@@ -84,12 +84,12 @@ public sealed class BagRulesTests
     public void Unhoned_and_unacknowledged_tools_stay_plain()
     {
         var tools = BagRules.Tools(
-            earnedSkillIds: ["gear", "framing"],
+            earnedSkillIds: ["setup", "framing"],
             skills: Skills,
             honedSkillIds: ["framing"],
             acknowledgedSkillIds: []);
 
-        Assert.Equal(new[] { "framing", "gear" }, tools.Select(tool => tool.SkillId));
+        Assert.Equal(new[] { "Framing", "Setup" }, tools.Select(tool => tool.Name));
         Assert.True(tools[0].Honed);
         Assert.False(tools[0].Acknowledged);
         Assert.False(tools[1].Honed);

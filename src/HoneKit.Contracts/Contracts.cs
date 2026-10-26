@@ -143,6 +143,16 @@ public sealed record ParseFailureDto(
     string SourceText,
     IReadOnlyList<string> Errors);
 
+public sealed record AiStatusDto(
+    string Provider,
+    string Model,
+    string Endpoint,
+    bool KeyConfigured,
+    string Mode,
+    DateTimeOffset? LastParseAt,
+    bool? LastParseOk,
+    string Detail);
+
 // ---- recommendations --------------------------------------------------------------------
 
 public sealed record SkillProgressDto(

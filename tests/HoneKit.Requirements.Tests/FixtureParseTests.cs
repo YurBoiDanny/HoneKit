@@ -11,9 +11,9 @@ public sealed class FixtureParseTests
     private static readonly SkillDto[] Catalogue =
     [
         new("framing", "camera", "Framing", 2),
-        new("gear", "camera", "Gear", 2),
-        new("operation", "camera", "Operation", 2),
-        new("switching", "camera", "Switching", 2)
+        new("setup", "camera", "Setup", 2),
+        new("tracking", "camera", "Tracking", 2),
+        new("presets-traces", "camera", "Presets & Traces", 2)
     ];
 
     [Fact]
@@ -26,7 +26,7 @@ public sealed class FixtureParseTests
         Assert.Equal("Camera coverage of a group-prayer meeting; podium moved to floor level", draft.Purpose);
         Assert.Equal("high", draft.Criticality);
 
-        Assert.Equal(new[] { "framing", "gear", "operation" }, draft.Skills.Select(skill => skill.SkillId));
+        Assert.Equal(new[] { "framing", "setup", "tracking" }, draft.Skills.Select(skill => skill.SkillId));
         Assert.Equal((0.5, 2, "crowd camera and floor camera"), (draft.Skills[0].MinLevel, draft.Skills[0].Headcount, draft.Skills[0].Rationale));
         Assert.Equal((0.5, 1, "floor cam set-up"), (draft.Skills[1].MinLevel, draft.Skills[1].Headcount, draft.Skills[1].Rationale));
         Assert.Equal((0.5, 2, "two camera positions"), (draft.Skills[2].MinLevel, draft.Skills[2].Headcount, draft.Skills[2].Rationale));

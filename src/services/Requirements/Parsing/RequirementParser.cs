@@ -19,18 +19,65 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
 
     private const string UnavailableDetail = "Reading is unavailable right now — type the requirements instead.";
 
+    private readonly object statusLock = new();
+
+    /// <summary>The last parse attempt, held in memory: a restart clears it.</summary>
+    public DateTimeOffset? LastParseAt { get; private set; }
+
+    public bool? LastParseOk { get; private set; }
+
     public async Task<ParseResult> ParseAsync(
         string sourceName,
         string sourceText,
         IReadOnlyList<SkillDto> catalogue,
         CancellationToken cancellationToken)
     {
-        var provider = (configuration["AI:PROVIDER"] ?? "fixture").Trim().ToLowerInvariant();
-        var model = configuration["AI:MODEL"] ?? "gpt-5-mini";
-        var endpoint = configuration["AI:ENDPOINT"] ?? "https://api.openai.com/v1";
-        var apiKey = configuration["AI:APIKEY"] ?? "";
+        var result = await ParseCoreAsync(sourceName, sourceText, catalogue, cancellationToken);
 
-        return provider switch
+        lock (statusLock)
+        {
+            LastParseAt = DateTimeOffset.UtcNow;
+            LastParseOk = result.Succeeded;
+        }
+
+        return result;
+    }
+
+    /// <summary>One tiny live call, used by the status strip's Check button.</summary>
+    public async Task<(bool Ok, string Reply)> ProbeAsync(CancellationToken cancellationToken)
+    {
+        var settings = AiSettings.From(configuration);
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(TimeoutSeconds));
+
+        try
+        {
+            var client = CreateClient(settings.Model, settings.Endpoint, settings.ApiKey);
+
+            var response = await client.GetResponseAsync(
+                "Reply with the single word ready.",
+                new ChatOptions { Temperature = 0 },
+                timeout.Token);
+
+            return (true, (response.Text ?? "").Trim());
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "The live reader probe failed");
+            return (false, "");
+        }
+    }
+
+    private async Task<ParseResult> ParseCoreAsync(
+        string sourceName,
+        string sourceText,
+        IReadOnlyList<SkillDto> catalogue,
+        CancellationToken cancellationToken)
+    {
+        var settings = AiSettings.From(configuration);
+
+        return settings.Provider switch
         {
             "fixture" => RunFixture(sourceName, sourceText, catalogue),
             "broken" => ParseResult.Failed(
@@ -39,18 +86,25 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
                 sourceName,
                 sourceText,
                 ["The AI provider is switched off (AI__PROVIDER=broken)."],
-                provider,
-                model),
+                settings.Provider,
+                settings.Model),
             "openai" or "ollama" or "opencode" => await RunModelAsync(
-                provider, model, endpoint, apiKey, sourceName, sourceText, catalogue, cancellationToken),
+                settings.Provider,
+                settings.Model,
+                settings.Endpoint,
+                settings.ApiKey,
+                sourceName,
+                sourceText,
+                catalogue,
+                cancellationToken),
             _ => ParseResult.Failed(
                 503,
                 UnavailableDetail,
                 sourceName,
                 sourceText,
-                [$"AI__PROVIDER '{provider}' is not recognised."],
-                provider,
-                model)
+                [$"AI__PROVIDER '{settings.Provider}' is not recognised."],
+                settings.Provider,
+                settings.Model)
         };
     }
 

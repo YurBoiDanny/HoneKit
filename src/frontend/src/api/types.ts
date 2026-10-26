@@ -7,6 +7,17 @@ export interface AcknowledgeRequest {
   skillId: string;
 }
 
+export interface AiStatusDto {
+  provider: string;
+  model: string;
+  endpoint: string;
+  keyConfigured: boolean;
+  mode: string;
+  lastParseAt: string | null;
+  lastParseOk: boolean | null;
+  detail: string;
+}
+
 export interface AssignDeckRequest {
   memberIds: string[];
 }

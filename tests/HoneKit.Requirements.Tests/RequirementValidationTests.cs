@@ -9,9 +9,9 @@ public sealed class RequirementValidationTests
     private static readonly SkillDto[] Catalogue =
     [
         new("framing", "camera", "Framing", 2),
-        new("gear", "camera", "Gear", 2),
-        new("operation", "camera", "Operation", 2),
-        new("switching", "camera", "Switching", 2)
+        new("setup", "camera", "Setup", 2),
+        new("tracking", "camera", "Tracking", 2),
+        new("presets-traces", "camera", "Presets & Traces", 2)
     ];
 
     private static ParsedRequirements ValidDraft() => new()

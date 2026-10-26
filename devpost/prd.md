@@ -376,3 +376,24 @@ Specific things this project will not do now, and why.
 - **How much of the requirements document reaches the model provider.** Real briefs may name
   volunteers. Nothing has been decided about redaction, and it matters more for a consumer
   provider than for a local model.
+
+## Revision after the first build (26 Oct 2026)
+
+Agreed in the final-review pass, within the same proof of concept.
+
+- **Skills are Framing, Setup, Tracking, and Presets & Traces.** The crew's work is expressed in
+  those four, and the seeded spread keeps the same shape (Elena 7/8, one worn bag, 40% team).
+- **Two new card types.**
+  - **Ordering** — the learner reorders the steps of a real procedure from the crew's camera
+    checklist. Correct order is the answer; a miss shows which step is out of place.
+  - **PTZ board** — an interactive Bolin-style controller: choose a camera, recall a preset
+    (PRESET/CALL plus a number), play a trace (1–4). The viewfinder moves when the camera is sent
+    somewhere. Used in decks and in authoring.
+- **The bag hub.** Clicking a bag plays the unzip, darkens the room, pushes in, and opens a
+  full-screen hub with the bag at the centre and options around it: tools, the crew, personalization,
+  and the numbers (team bag). Leave with Esc, the close control, or by choosing a destination.
+- **Deck authoring** gains both new card types, including placing the target frame for a framing card.
+- **The reader's status** is shown on the Meeting plan: provider, model, key present, and whether it
+  is the offline fixture or a live endpoint.
+
+The non-goals are unchanged: no ranking of people, no scheduling system, no auth.

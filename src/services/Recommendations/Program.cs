@@ -5,7 +5,7 @@ using HoneKit.Recommendations.Endpoints;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddServiceSqlite<RecommendationsDbContext>("recommendations.db");
+builder.AddServiceSqlite<RecommendationsDbContext>("recommendations-v2.db");
 
 builder.Services.AddHttpClient<RequirementsClient>(client => client.BaseAddress = new Uri("http://requirements"));
 builder.Services.AddHttpClient<RosterClient>(client => client.BaseAddress = new Uri("http://roster"));

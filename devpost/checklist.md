@@ -109,6 +109,46 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Run the demo script yourself at 375px and at desktop width, including one wrong answer and one service stopped. What breaks, what reads wrong, and what would you fix first?
   Commit: `Polish the bag, states, and demo path`
 
+- [x] **11. Reshape the crew's skills and seed**
+  Becomes usable: the whole app speaks Framing, Setup, Tracking, and Presets & Traces. Bags, team percentages, requirements, recommendations and the worn-bag spread all work on the new four.
+  Why now: every downstream feature keys off skill ids and the seeded spread; reshaping once now avoids renaming twice.
+  PRD ref: `prd.md > The bag`, `prd.md > The member loop`
+  Spec ref: `spec.md > Components > Content service`, `spec.md > Data Model`
+  Build: Rename the four skills and their lessons; rebuild the seeded completions to keep Elena 7/8, the 19/48 spread and the worn bag; rewrite the seed decks/cards and the Requirements fixture mapping (gear→setup, operation→tracking); move the demo gap to Presets & Traces; update every test and the Content DB file name so volumes reseed.
+  Verify (mechanical): `dotnet test HoneKit.slnx`; fresh stack shows team 40% with the new names; fixture parse names Setup and Tracking; recommendations gap lands on Presets & Traces with a deck.
+  Learner check: Do the four names read like the crew's actual work, and does the 40% spread still tell the same story?
+  Commit: `Reshape the crew skills around framing, setup, tracking and presets`
+
+- [x] **12. Open the bag into a full-screen hub**
+  Becomes usable: clicking a bag unzips it, darkens the room, pushes the camera in, and lands in a full-screen hub with the bag in the centre and angular options around it: tools, patches, crew, personalize, close.
+  Why now: this is the kernel interaction, and the new card types should inherit its visual language rather than the old page layout.
+  PRD ref: `prd.md > The bag`, `prd.md > Screens and Layout`
+  Spec ref: `spec.md > Look and Feel > The bag, visually`, `spec.md > Components > Frontend`
+  Build: A layered bag SVG (straps, body, zipper, flap, pockets, dark interior, tools, patches) with idle/open/zoomed/worn state classes; a zipper split, flap peel, interior shadow and push-in; a full-screen ink hub with paper-cut diagonal cards and halftone texture; selected card snap plus 2px jitter; focus trap, Esc, arrows, reduced-motion crossfade; personalization only on your own bag.
+  Verify (mechanical): `npm run build`; bag opens from team, own and wall bags; keyboard-only open/close; reduced-motion path; no scroll behind the hub.
+  Learner check: Does the unzip and push-in feel like opening your bag, and can you read the hub without hunting?
+  Commit: `Open the bag into a full-screen hub`
+
+- [ ] **13. Ordering cards and the Bolin PTZ board**
+  Becomes usable: two new card types — reorder the camera setup steps from the real checklist, and use a Bolin-style board to recall presets and play traces. Both playable in decks and authorable.
+  Why now: new content types need the reshaped skills and the hub's visual language in place first.
+  PRD ref: `prd.md > The member loop`, `prd.md > Deck authoring`
+  Spec ref: `spec.md > Components > Content service`, `spec.md > Components > Progress service`, `spec.md > Data Model`
+  Build: Content card types `ordering` and `ptz`; Progress grading for a sequence and for preset/trace actions; ordering UI with drag plus keyboard moves; PTZ board with camera tabs, preset grid (1 and 10 highlighted), traces 1–4, CALL/PRESET verbs and a viewfinder that pans/zooms on recall; authoring forms for both; seed cards from the camera checklist.
+  Verify (mechanical): tests for sequence and action grading; play one of each; author one of each; the checklist order is graded both ways.
+  Learner check: Does the board feel like the Bolin controller, and does the order card teach the real setup sequence?
+  Commit: `Add ordering and PTZ board cards`
+
+- [x] **14. Show the brief reader's status**
+  Becomes usable: the Meeting plan names the reader (fixture, Ollama, OpenAI-compatible), whether a key is configured, and offers a live check before relying on it.
+  Why now: the learner asked whether the AI really works; the fixture is proven, the live path needs visible state.
+  PRD ref: `prd.md > Meeting requirements and recommendations`
+  Spec ref: `spec.md > Components > Requirements service`, `spec.md > Important Failure Modes`
+  Build: `GET /api/requirements/ai-status` returning provider, model, key-present, fixture/live, last parse outcome, and an optional live probe; a status strip on the plan screen with a Check button.
+  Verify (mechanical): fixture reports ready offline; broken provider reports unavailable; a live probe (Ollama or a free OpenAI-compatible key) returns a real answer.
+  Learner check: Is it obvious which reader will run and whether it has what it needs?
+  Commit: `Show the brief reader's status`
+
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3, the tool drop: bag art, motion and the rest of the member loop can still be shaped by feedback
@@ -135,4 +175,5 @@ Activity mode:
 - Frontend published as a hand-written nginx image instead of `PublishAsStaticWebsite` — the Aspire static-website publisher reverse-proxies only one backend, and this app has five services the browser must reach. The spec's documented fallback applies: only the frontend is ejected; the five .NET services still come from the generated compose, and the AppHost stays the single model.
 - A completed deck grants its tool even when first-try accuracy is below the 80% pass line — otherwise the scripted one-wrong run on a four-card deck (75%) could never produce the tool drop the demo depends on. Pass stays the quality label, honed stays ≥90%, and leaving early grants nothing.
 - Seeded a small `Switching Essentials` deck so the switching gap has something to send in one action. The original single framing deck left "gaps become work" with no deck to assign.
+- The second review added two card types (ordering and the Bolin PTZ board) and a full-screen bag hub, so slices 11–14 were added to the plan instead of reopening the planning skills. The four skills were renamed and the seed, fixture, recommendations and tests moved with them.
 - Compose starts services on `service_started`, not container healthchecks — Aspire's compose publisher did not emit healthchecks for the project resources. The pages retry once and show a labelled state on a cold start instead of the frontend gating on health.

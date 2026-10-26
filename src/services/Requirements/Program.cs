@@ -6,7 +6,7 @@ using HoneKit.Requirements.Parsing;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddServiceSqlite<RequirementsDbContext>("requirements.db");
+builder.AddServiceSqlite<RequirementsDbContext>("requirements-v2.db");
 
 builder.Services.AddHttpClient<ContentClient>(client => client.BaseAddress = new Uri("http://content"));
 builder.Services.AddSingleton<RequirementParser>();

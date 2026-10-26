@@ -11,8 +11,8 @@ public sealed class RecommendationRulesTests
     private static RecommendationRequirement[] FixtureRequirements() =>
     [
         new("framing", "Framing", 0.5, 2),
-        new("gear", "Gear", 0.5, 1),
-        new("operation", "Operation", 0.5, 2)
+        new("setup", "Setup", 0.5, 1),
+        new("tracking", "Tracking", 0.5, 2)
     ];
 
     private static RecommendationMember Member(
@@ -31,12 +31,12 @@ public sealed class RecommendationRulesTests
 
     private static RecommendationMember[] Crew() =>
     [
-        Member("elena", "Elena", 40, ("framing", 1.0), ("gear", 1.0), ("operation", 1.0), ("switching", 0.5)),
-        Member("marcus", "Marcus", 4, ("framing", 0.5), ("gear", 1.0), ("operation", 0.5), ("switching", 0.5)),
-        Member("priya", "Priya", 2, ("framing", 0.5), ("gear", 0.5), ("operation", 1.0), ("switching", 0.0)),
-        Member("noor", "Noor", 9, ("framing", 1.0), ("gear", 0.0), ("operation", 0.0), ("switching", 0.0)),
-        Member("sam", "Sam", 1, ("framing", 0.0), ("gear", 0.0), ("operation", 0.0), ("switching", 0.5)),
-        Member("danny", "Danny", null, ("framing", 0.0), ("gear", 0.0), ("operation", 0.0), ("switching", 0.0))
+        Member("elena", "Elena", 40, ("framing", 1.0), ("setup", 1.0), ("tracking", 1.0), ("presets-traces", 0.5)),
+        Member("marcus", "Marcus", 4, ("framing", 0.5), ("setup", 1.0), ("tracking", 0.5), ("presets-traces", 0.5)),
+        Member("priya", "Priya", 2, ("framing", 0.5), ("setup", 0.5), ("tracking", 1.0), ("presets-traces", 0.0)),
+        Member("noor", "Noor", 9, ("framing", 1.0), ("setup", 0.0), ("tracking", 0.0), ("presets-traces", 0.0)),
+        Member("sam", "Sam", 1, ("framing", 0.0), ("setup", 0.0), ("tracking", 0.0), ("presets-traces", 0.5)),
+        Member("danny", "Danny", null, ("framing", 0.0), ("setup", 0.0), ("tracking", 0.0), ("presets-traces", 0.0))
     ];
 
     private static RecommendationContext Context(
@@ -45,7 +45,7 @@ public sealed class RecommendationRulesTests
         var decks = new Dictionary<string, string>(StringComparer.Ordinal)
         {
             ["framing"] = "deck-camera-foundations",
-            ["switching"] = "deck-switching-essentials"
+            ["presets-traces"] = "deck-presets-traces"
         };
 
         return new RecommendationContext(requirements ?? FixtureRequirements(), Crew(), decks, Now);
@@ -102,10 +102,10 @@ public sealed class RecommendationRulesTests
     }
 
     [Fact]
-    public void A_switching_gap_names_the_new_deck_and_the_below_level_crew()
+    public void A_presets_gap_names_the_new_deck_and_the_below_level_crew()
     {
         var requirements = FixtureRequirements()
-            .Append(new RecommendationRequirement("switching", "Switching", 1.0, 1))
+            .Append(new RecommendationRequirement("presets-traces", "Presets & Traces", 1.0, 1))
             .ToArray();
 
         var context = Context(requirements);
@@ -113,9 +113,9 @@ public sealed class RecommendationRulesTests
         var suggestions = RecommendationRules.Suggest(context, RecommendationRules.Critical);
 
         var gap = Assert.Single(RecommendationRules.Gaps(context, suggestions, assessments));
-        Assert.Equal("switching", gap.SkillId);
-        Assert.Equal("Switching", gap.Name);
-        Assert.Equal("deck-switching-essentials", gap.DeckId);
+        Assert.Equal("presets-traces", gap.SkillId);
+        Assert.Equal("Presets & Traces", gap.Name);
+        Assert.Equal("deck-presets-traces", gap.DeckId);
         Assert.Equal(1, gap.Shortfall);
         Assert.Equal(
             ["elena", "marcus", "sam", "danny", "noor", "priya"],
@@ -130,7 +130,7 @@ public sealed class RecommendationRulesTests
         var sustain = Assert.Single(RecommendationRules.Sustain(context, RecommendationRules.Assess(context)));
 
         Assert.Equal("elena", sustain.MemberId);
-        Assert.Contains("At level on Framing, Gear and Operation", sustain.Reason, StringComparison.Ordinal);
+        Assert.Contains("At level on Framing, Setup and Tracking", sustain.Reason, StringComparison.Ordinal);
         Assert.Contains("40 days", sustain.Reason, StringComparison.Ordinal);
     }
 
@@ -144,8 +144,8 @@ public sealed class RecommendationRulesTests
         var sam = assessments["sam"];
         Assert.Equal(3, sam.Warnings.Count);
         Assert.Contains(sam.Warnings, warning => warning.Contains("Framing", StringComparison.Ordinal));
-        Assert.Contains(sam.Warnings, warning => warning.Contains("Gear", StringComparison.Ordinal));
-        Assert.Contains(sam.Warnings, warning => warning.Contains("Operation", StringComparison.Ordinal));
+        Assert.Contains(sam.Warnings, warning => warning.Contains("Setup", StringComparison.Ordinal));
+        Assert.Contains(sam.Warnings, warning => warning.Contains("Tracking", StringComparison.Ordinal));
 
         Assert.Empty(assessments["elena"].Warnings);
         Assert.True(sam.Reasons.Count is >= 1 and <= 2);
@@ -154,7 +154,7 @@ public sealed class RecommendationRulesTests
     [Fact]
     public void A_zero_level_requirement_is_met_by_everyone()
     {
-        RecommendationRequirement[] requirements = [new("switching", "Switching", 0, 1)];
+        RecommendationRequirement[] requirements = [new("presets-traces", "Presets & Traces", 0, 1)];
         var context = Context(requirements);
 
         var assessments = RecommendationRules.Assess(context);

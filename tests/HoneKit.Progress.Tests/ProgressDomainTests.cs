@@ -172,15 +172,15 @@ public sealed class ProgressDomainTests
         SkillDto[] skills =
         [
             new("framing", "camera", "Framing", 2),
-            new("gear", "camera", "Gear", 2)
+            new("setup", "camera", "Setup", 2)
         ];
 
         LessonDto[] lessons =
         [
             new("framing-1", "framing", 1, "Reading the frame"),
             new("framing-2", "framing", 2, "Light and colour"),
-            new("gear-1", "gear", 1, "Build the camera"),
-            new("gear-2", "gear", 2, "Know the kit")
+            new("setup-1", "setup", 1, "Build the camera"),
+            new("setup-2", "setup", 2, "The floor camera")
         ];
 
         var older = new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero);
@@ -197,11 +197,11 @@ public sealed class ProgressDomainTests
         Assert.Equal(100, framing.Percent);
         Assert.Equal(newer, framing.LastAnsweredAt);
 
-        var gear = progress.Single(row => row.SkillId == "gear");
-        Assert.Equal(0, gear.CompletedLessons);
-        Assert.Equal(2, gear.TotalLessons);
-        Assert.Equal(0, gear.Percent);
-        Assert.Null(gear.LastAnsweredAt);
+        var setup = progress.Single(row => row.SkillId == "setup");
+        Assert.Equal(0, setup.CompletedLessons);
+        Assert.Equal(2, setup.TotalLessons);
+        Assert.Equal(0, setup.Percent);
+        Assert.Null(setup.LastAnsweredAt);
     }
 
     [Fact]
