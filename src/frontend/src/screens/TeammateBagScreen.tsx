@@ -61,6 +61,7 @@ export function TeammateBagScreen() {
                 <BagArt
                   colour={bag.data.colour}
                   worn={bag.data.worn}
+                  style={bag.data.style}
                   tools={bag.data.tools}
                   label={`${bag.data.name}'s camera bag, ${
                     bag.data.tools.length === 0

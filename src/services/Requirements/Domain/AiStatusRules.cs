@@ -39,7 +39,7 @@ public static class AiStatusRules
                 Live,
                 $"Live Ollama reader configured for {modelName}; the key is ignored."),
 
-            "openai" or "opencode" => hasKey
+            "openai" or "opencode" or "opencode-go" => hasKey
                 ? new AiStatus(
                     KeyConfigured: true,
                     Live,

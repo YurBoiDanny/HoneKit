@@ -111,6 +111,7 @@ export function BagScreen() {
                   <BagArt
                     colour={bag.data.colour}
                     worn={bag.data.worn}
+                    style={bag.data.style}
                     tools={tools}
                     droppingSkillId={dropping?.skillId}
                     label={

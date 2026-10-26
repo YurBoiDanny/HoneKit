@@ -32,7 +32,6 @@ export function BagHub({ open, target, onClose }: BagHubProps) {
   const closeButton = useRef<HTMLButtonElement>(null);
   const [phase, setPhase] = useState<Phase>('unzip');
   const [panel, setPanel] = useState<Panel>(null);
-  const [opened, setOpened] = useState(false);
   const memberId = target.kind === 'member' ? target.memberId : '';
 
   const bag = useQuery({
@@ -53,16 +52,13 @@ export function BagHub({ open, target, onClose }: BagHubProps) {
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setPanel(null);
-    setOpened(false);
     setPhase(reduced ? 'hub' : 'unzip');
-    const toOpen = window.setTimeout(() => setOpened(true), reduced ? 0 : 80);
     document.body.classList.add('hub-open');
 
     const toZoom = window.setTimeout(() => setPhase('zoom'), reduced ? 0 : 520);
     const toHub = window.setTimeout(() => setPhase('hub'), reduced ? 0 : 900);
 
     return () => {
-      window.clearTimeout(toOpen);
       window.clearTimeout(toZoom);
       window.clearTimeout(toHub);
       document.body.classList.remove('hub-open');
@@ -189,10 +185,10 @@ export function BagHub({ open, target, onClose }: BagHubProps) {
       <div className="hub-stage">
         <BagArt
           colour={target.kind === 'team' ? 'powder' : coloursForBag}
+          style={target.kind === 'team' ? 'duffel' : (bag.data?.style ?? 'backpack')}
           worn={worn}
           tools={earning}
           fills={fills}
-          state={opened ? 'open' : 'idle'}
           label={`${title}, open`}
         />
       </div>

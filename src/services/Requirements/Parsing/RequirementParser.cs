@@ -88,7 +88,7 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
                 ["The AI provider is switched off (AI__PROVIDER=broken)."],
                 settings.Provider,
                 settings.Model),
-            "openai" or "ollama" or "opencode" => await RunModelAsync(
+            "openai" or "ollama" or "opencode" or "opencode-go" => await RunModelAsync(
                 settings.Provider,
                 settings.Model,
                 settings.Endpoint,

@@ -52,3 +52,26 @@ the stack. Never commit a key.
 
 The provider is only used by the Requirements service. Recommendations are deterministic rules, so
 they repeat exactly.
+
+## OpenCode Go
+
+OpenCode Go is a subscription with an OpenAI-compatible endpoint for its open models. The app supports
+it as a first-class provider:
+
+```bash
+AI__PROVIDER=opencode-go
+AI__MODEL=glm-5.3-flash        # or kimi-k3, deepseek-v4.1-flash, longcat-2.0, ...
+AI__ENDPOINT=https://opencode.ai/inference/go/openai/v1
+AI__APIKEY=...                 # OpenCode Go API key, only in .env.Production or the shell
+```
+
+Export all three before `aspire deploy`, and keep `AI__APIKEY` in `aspire-output/.env.Production`
+(gitignored). Set `AI__ENDPOINT` explicitly: the service ships an OpenAI default, so Go will not pick
+up its endpoint on its own.
+
+Only Go's OpenAI-compatible (`/openai/v1`) models work here — the Anthropic and Google-native models
+use different endpoints and clients. OpenCode's docs also ask clients to send an `x-opencode-session`
+header; this POC does not, which is fine for a demo but worth knowing if Go starts rate-limiting.
+
+The Meeting plan's reader strip shows `opencode-go` and whether the key is present; **Check the reader**
+makes one tiny live call and reports the result. It never shows the key.

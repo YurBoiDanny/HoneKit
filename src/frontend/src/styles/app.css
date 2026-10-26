@@ -2949,3 +2949,27 @@ body.hub-open {
 .ai-status--unavailable .ai-dot {
   background: var(--rose);
 }
+
+/* bag styles: the chosen shape is visible, not just stored */
+.bag-handle,
+.bag-sling-strap {
+  display: none;
+}
+
+.bag-art--style-duffel {
+  transform: scaleX(1.08) scaleY(0.86);
+  transform-origin: 50% 70%;
+}
+
+.bag-art--style-duffel .bag-handle {
+  display: block;
+}
+
+.bag-art--style-sling {
+  transform: rotate(-5deg) scale(0.95);
+  transform-origin: 50% 60%;
+}
+
+.bag-art--style-sling .bag-sling-strap {
+  display: block;
+}

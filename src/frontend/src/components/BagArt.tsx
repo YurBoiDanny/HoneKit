@@ -9,7 +9,7 @@ type BagArtProps = {
   droppingSkillId?: string | null;
   /** Team-bag mode: percent filled per skill, drawn as a gauge in the patch socket. */
   fills?: Record<string, number>;
-  state?: 'idle' | 'open';
+  style?: string;
 };
 
 /**
@@ -23,12 +23,12 @@ export function BagArt({
   tools,
   droppingSkillId = null,
   fills,
-  state = 'idle',
+  style = 'backpack',
 }: BagArtProps) {
   const clipPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   return (
     <svg
-      className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''} bag-art--${state}`}
+      className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''} bag-art--style-${style}`}
       viewBox="0 0 460 540"
       role="img"
       aria-label={label}
@@ -61,56 +61,21 @@ export function BagArt({
       <ellipse cx="230" cy="133" rx="95" ry="13" fill="#2a211b" opacity="0.85" />
       <path d="M126 128 C170 146 290 146 334 128" fill="none" stroke="var(--bag-edge)" strokeWidth="2.5" />
 
-      {/* tools poking out of the opening */}
-      <g className="bag-tool-tops">
-        {tools.slice(0, 4).map((tool, index) => {
-          const x = 150 + index * 42;
-          return (
-            <g key={tool.skillId} transform={`translate(${x} 88)`}>
-              <rect
-                x="0"
-                y="0"
-                width="26"
-                height="38"
-                rx="5"
-                fill={tool.honed ? 'var(--teal)' : 'var(--brass)'}
-                stroke="var(--ink)"
-                strokeOpacity="0.3"
-              />
-              <circle cx="13" cy="15" r="6" fill="var(--paper-raised)" opacity="0.85" />
-              <circle cx="13" cy="15" r="3" fill="var(--ink)" opacity="0.55" />
-              <rect x="9" y="26" width="8" height="4" rx="2" fill="var(--paper-raised)" opacity="0.7" />
-            </g>
-          );
-        })}
-      </g>
-
-      {/* flap, folded forward, with a zipper */}
-      <g className="bag-flap">
-        <path
-          d="M126 146 C176 164 284 164 334 146 L326 300 C282 318 178 318 134 300 Z"
-          fill="var(--bag-light)"
-          stroke="var(--bag-edge)"
-          strokeWidth="2.5"
-        />
-        <path
-          d="M142 162 C186 177 274 177 318 162 L311 286 C270 301 190 301 149 286 Z"
-          fill="none"
-          stroke="var(--ink)"
-          strokeOpacity="0.22"
-          strokeWidth="2"
-          strokeDasharray="5 6"
-        />
-        <path
-          d="M136 158 C186 176 274 176 324 158"
-          fill="none"
-          stroke="var(--ink)"
-          strokeOpacity="0.45"
-          strokeWidth="3"
-          strokeDasharray="2 4"
-        />
-        <rect x="300" y="153" width="12" height="18" rx="4" fill="var(--brass)" stroke="var(--ink)" strokeOpacity="0.3" />
-      </g>
+      {/* flap, folded forward */}
+      <path
+        d="M126 146 C176 164 284 164 334 146 L326 300 C282 318 178 318 134 300 Z"
+        fill="var(--bag-light)"
+        stroke="var(--bag-edge)"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M142 162 C186 177 274 177 318 162 L311 286 C270 301 190 301 149 286 Z"
+        fill="none"
+        stroke="var(--ink)"
+        strokeOpacity="0.22"
+        strokeWidth="2"
+        strokeDasharray="5 6"
+      />
 
       {/* buckle and strap */}
       <rect x="212" y="250" width="36" height="94" rx="10" fill="var(--bag-deep)" />
@@ -188,10 +153,10 @@ export function BagArt({
                 y={y + 10.5}
                 textAnchor="middle"
                 fontFamily="Inter, sans-serif"
-                fontSize="9.5"
+                fontSize="8.5"
                 fill="var(--ink)"
               >
-                {tool.name}
+                {tool.name.split(' ')[0]}
               </text>
             </g>
           );
@@ -225,13 +190,24 @@ export function BagArt({
               />
               <text
                 x={x + 34}
-                y={tool.honed ? y + 24 : y + 28}
+                y={tool.honed ? y + 21 : y + 24}
                 textAnchor="middle"
                 fontFamily="Inter, sans-serif"
-                fontSize="11"
+                fontSize="9.5"
                 fill={tool.honed ? 'var(--paper)' : 'var(--ink)'}
               >
-                {tool.name}
+                {tool.name.length > 9 ? (
+                  <>
+                    <tspan x={x + 34} dy="0">
+                      {tool.name.split(' ')[0]}
+                    </tspan>
+                    <tspan x={x + 34} dy="10">
+                      {tool.name.slice(tool.name.split(' ')[0].length + 1)}
+                    </tspan>
+                  </>
+                ) : (
+                  tool.name
+                )}
               </text>
               {tool.honed && (
                 <text
@@ -267,6 +243,25 @@ export function BagArt({
 
       {/* base stitch */}
       <path d="M136 476 L324 476" stroke="var(--ink)" strokeOpacity="0.18" strokeWidth="2" strokeDasharray="5 7" />
+
+      {/* style cues */}
+      <path
+        className="bag-handle"
+        d="M190 116 C202 90 258 90 270 116"
+        fill="none"
+        stroke="var(--bag-deep)"
+        strokeWidth="9"
+        strokeLinecap="round"
+      />
+      <path
+        className="bag-sling-strap"
+        d="M118 190 C220 250 280 330 344 446"
+        fill="none"
+        stroke="var(--bag-deep)"
+        strokeWidth="14"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
 
       {/* carabiner */}
       <g stroke="var(--brass)" strokeWidth="3.5" fill="none">
