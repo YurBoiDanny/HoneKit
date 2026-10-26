@@ -101,14 +101,16 @@ public static class ProgressDomain
 
         var completed = IsComplete(queue);
 
+        // An unfinished deck cannot pass, whatever the answered subset scored: finishing early
+        // shows "You left early.", not a pass over the cards the member happened to answer.
         return new SessionOutcome(
             firstTryCorrect,
             totalCards,
             retries,
             scorePercent,
-            IsPassed(scorePercent),
-            IsHoned(scorePercent, retries),
-            completed,
+            Passed: completed && IsPassed(scorePercent),
+            Honed: IsHoned(scorePercent, retries),
+            Completed: completed,
             ToolGranted: completed);
     }
 

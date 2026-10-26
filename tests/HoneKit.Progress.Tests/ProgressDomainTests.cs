@@ -140,6 +140,21 @@ public sealed class ProgressDomainTests
     }
 
     [Fact]
+    public void Leaving_after_every_answered_card_was_correct_still_cannot_pass()
+    {
+        // Two right answers and two cards still in the queue: 100% of what was answered, but the
+        // deck was not finished. The result screen must say "You left early.", not "Deck complete."
+        var outcome = ProgressDomain.Evaluate(
+            [new GradedAnswer("card-1", true), new GradedAnswer("card-2", true)],
+            ["card-3", "card-4"]);
+
+        Assert.Equal(100, outcome.ScorePercent);
+        Assert.False(outcome.Completed);
+        Assert.False(outcome.Passed);
+        Assert.False(outcome.ToolGranted);
+    }
+
+    [Fact]
     public void A_plain_run_after_a_honed_one_keeps_the_skill_honed()    {
         // The later plain session does not erase the earlier honed one, and a deck Content no
         // longer knows cannot invent a skill.
