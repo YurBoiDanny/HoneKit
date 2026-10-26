@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BagArt } from '../components/BagArt';
-import { BagHub } from '../components/BagHub';
 import { DEMO_ROLE, fetchBag, fetchTeam } from '../api/client';
 import { quietSentence } from '../lib/member';
 
@@ -14,7 +12,6 @@ export function TeammateBagScreen() {
     enabled: memberId.length > 0,
   });
   const team = useQuery({ queryKey: ['team', DEMO_ROLE], queryFn: () => fetchTeam(DEMO_ROLE) });
-  const [hubOpen, setHubOpen] = useState(false);
   const member = team.data?.members.find((candidate) => candidate.id === memberId);
 
   return (
@@ -52,13 +49,7 @@ export function TeammateBagScreen() {
 
           <div className="teammate-layout">
             <figure className="teammate-bag">
-              <button
-                type="button"
-                className="bag-open"
-                aria-label={`Open ${bag.data.name}'s bag`}
-                onClick={() => setHubOpen(true)}
-              >
-                <BagArt
+              <BagArt
                   colour={bag.data.colour}
                   worn={bag.data.worn}
                   style={bag.data.style}
@@ -69,7 +60,6 @@ export function TeammateBagScreen() {
                       : `${bag.data.tools.length} tools earned`
                   }`}
                 />
-              </button>
             </figure>
 
             <div className="teammate-kit">
@@ -91,12 +81,6 @@ export function TeammateBagScreen() {
           </div>
         </>
       )}
-
-      <BagHub
-        open={hubOpen}
-        target={{ kind: 'member', memberId, editable: false }}
-        onClose={() => setHubOpen(false)}
-      />
     </section>
   );
 }

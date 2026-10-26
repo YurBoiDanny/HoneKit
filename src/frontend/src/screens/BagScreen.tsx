@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BagArt } from '../components/BagArt';
-import { BagHub } from '../components/BagHub';
 import {
   acknowledgeTool,
   DEMO_MEMBER_ID,
@@ -49,7 +48,6 @@ export function BagScreen() {
   }, [dropping?.skillId, queryClient]);
 
   const [savingStyle, setSavingStyle] = useState(false);
-  const [hubOpen, setHubOpen] = useState(false);
 
   async function personalize(colour: string, style: string) {
     if (!bag.data || savingStyle) {
@@ -102,13 +100,7 @@ export function BagScreen() {
           ) : (
             <>
               <figure className="bag-figure">
-                <button
-                  type="button"
-                  className="bag-open"
-                  aria-label="Open your bag"
-                  onClick={() => setHubOpen(true)}
-                >
-                  <BagArt
+                <BagArt
                     colour={bag.data.colour}
                     worn={bag.data.worn}
                     style={bag.data.style}
@@ -120,7 +112,6 @@ export function BagScreen() {
                         : `${bag.data.name}'s camera bag, ${tools.map(toolLabel).join(', ')} earned`
                     }
                   />
-                </button>
               </figure>
 
               {dropping && (
@@ -198,12 +189,6 @@ export function BagScreen() {
           onRetry={() => team.refetch()}
         />
       </div>
-
-      <BagHub
-        open={hubOpen}
-        target={{ kind: 'member', memberId: DEMO_MEMBER_ID, editable: true }}
-        onClose={() => setHubOpen(false)}
-      />
     </>
   );
 }

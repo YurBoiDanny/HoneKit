@@ -1,8 +1,6 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { BagArt } from '../components/BagArt';
-import { BagHub } from '../components/BagHub';
 import { BagSwitch } from '../components/BagSwitch';
 import { CrewRail } from '../components/CrewRail';
 import { DEMO_ROLE, fetchTeam, fetchTeamBag } from '../api/client';
@@ -10,7 +8,6 @@ import { DEMO_ROLE, fetchTeam, fetchTeamBag } from '../api/client';
 export function TeamBagScreen() {
   const teamBag = useQuery({ queryKey: ['team-bag', DEMO_ROLE], queryFn: () => fetchTeamBag(DEMO_ROLE) });
   const team = useQuery({ queryKey: ['team', DEMO_ROLE], queryFn: () => fetchTeam(DEMO_ROLE) });
-  const [hubOpen, setHubOpen] = useState(false);
 
   const tools = teamBag.data?.tools ?? [];
   const earned = tools.map((tool) => ({
@@ -54,13 +51,7 @@ export function TeamBagScreen() {
           ) : (
             <>
               <figure className="bag-figure">
-                <button
-                  type="button"
-                  className="bag-open"
-                  aria-label="Open the crew's bag"
-                  onClick={() => setHubOpen(true)}
-                >
-                  <BagArt
+                <BagArt
                     colour="powder"
                     tools={earned}
                     fills={fills}
@@ -68,7 +59,6 @@ export function TeamBagScreen() {
                       .map((tool) => `${tool.name} ${Math.round(tool.percent)}%`)
                       .join(', ')}.`}
                   />
-                </button>
               </figure>
 
               <div className="bag-caption">
@@ -111,8 +101,6 @@ export function TeamBagScreen() {
           onRetry={() => team.refetch()}
         />
       </div>
-
-      <BagHub open={hubOpen} target={{ kind: 'team' }} onClose={() => setHubOpen(false)} />
     </>
   );
 }
