@@ -17,22 +17,22 @@ What the camera crew learns becomes tools and patches in a bag they carry.
 
 ## Run it
 
-First-time setup, with a live reader:
+With a live reader, load the settings into the shell first:
 
 ```bash
 cp .env.local.example .env.local   # fill in AI__APIKEY
-./scripts/start-demo.sh
+set -a; source ./.env.local; set +a
 ```
 
-Without `.env.local` the script deploys the fixture reader, which needs no key.
+Without `.env.local`, the fixture reader is used and no key is needed.
 
 ```bash
+# inner loop: Aspire runs the services and the dashboard
+aspire run
+
 # the deployed shape: generate compose, build images, start the stack
 aspire deploy -o aspire-output
 # open http://localhost:8080
-
-# inner loop: the services as local processes, with the Aspire dashboard
-cd src/HoneKit.AppHost && dotnet run
 ```
 
 `aspire-output/docker-compose.yaml` is generated from `src/HoneKit.AppHost`. Change the AppHost and
