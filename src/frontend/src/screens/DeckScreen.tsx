@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -11,8 +11,11 @@ import {
   startSession,
   submitAttempt,
 } from '../api/client';
-import type { AttemptResultDto, SessionDto, SessionResultDto } from '../api/types';
+import type { AttemptResultDto, CardDto, SessionDto, SessionResultDto } from '../api/types';
 import { FramingCard } from '../components/FramingCard';
+import { OrderingCard } from '../components/OrderingCard';
+import { PtzBoard } from '../components/PtzBoard';
+import { describePtzAction, parseStringList } from '../components/ptz';
 
 type Phase = 'starting' | 'playing' | 'result' | 'error';
 
@@ -203,6 +206,12 @@ export function DeckScreen() {
         : ''
     : '';
   const isFraming = card.type === 'framing';
+  const isOrdering = card.type === 'ordering';
+  const isPtz = card.type === 'ptz';
+  const correctAnswerReveal =
+    feedback && !feedback.correct && showAnswer ? (
+      <CorrectAnswerReveal card={card} answer={feedback.correctAnswer} />
+    ) : null;
 
   return (
     <section className="deck-screen">
@@ -241,9 +250,9 @@ export function DeckScreen() {
           <CarabinerIcon />
         </span>
 
-        {!isFraming && (
+        {!isFraming && !isPtz && card.imageRef && (
           <div className="card-media">
-            {card.imageRef && <img src={card.imageRef} alt="" />}
+            <img src={card.imageRef} alt="" />
           </div>
         )}
 
@@ -269,6 +278,20 @@ export function DeckScreen() {
               card={card}
               feedback={feedback}
               showAnswer={showAnswer}
+              onSubmit={(value) => void answerWith(value)}
+            />
+          ) : isOrdering ? (
+            <OrderingCard
+              key={card.id}
+              card={card}
+              feedback={feedback}
+              onSubmit={(value) => void answerWith(value)}
+            />
+          ) : isPtz ? (
+            <PtzBoard
+              key={card.id}
+              card={card}
+              feedback={feedback}
               onSubmit={(value) => void answerWith(value)}
             />
           ) : (
@@ -309,6 +332,7 @@ export function DeckScreen() {
               feedback={feedback}
               correctLabel={correctLabel}
               pickedLabel={pickedLabel}
+              revealAnswer={correctAnswerReveal}
               showAnswer={showAnswer}
               onNext={() => void advance()}
             />
@@ -327,11 +351,12 @@ type FeedbackProps = {
   feedback: AttemptResultDto;
   correctLabel?: string;
   pickedLabel?: string;
+  revealAnswer?: ReactNode;
   showAnswer: boolean;
   onNext: () => void;
 };
 
-function Feedback({ feedback, correctLabel, pickedLabel, showAnswer, onNext }: FeedbackProps) {
+function Feedback({ feedback, correctLabel, pickedLabel, revealAnswer, showAnswer, onNext }: FeedbackProps) {
   return (
     <div className={`feedback ${feedback.correct ? 'feedback--right' : 'feedback--wrong'}`} role="status">
       <p className="feedback-verdict">{feedback.correct ? 'Right.' : 'Not quite — try again.'}</p>
@@ -340,11 +365,12 @@ function Feedback({ feedback, correctLabel, pickedLabel, showAnswer, onNext }: F
         <p>{feedback.explanation}</p>
       ) : showAnswer ? (
         <>
+          {revealAnswer}
           <p>
             {correctLabel && <strong>{correctLabel} </strong>}
             {feedback.explanation}
           </p>
-          {feedback.wrongReason && (
+          {feedback.wrongReason && pickedLabel && (
             <p className="feedback-reason">
               You picked {pickedLabel}: {feedback.wrongReason}
             </p>
@@ -367,6 +393,58 @@ function Feedback({ feedback, correctLabel, pickedLabel, showAnswer, onNext }: F
       </button>
     </div>
   );
+}
+
+type CorrectAnswerRevealProps = {
+  card: CardDto;
+  answer: string | null;
+};
+
+/** The server sends the answer as a string; orders and action lists arrive as JSON arrays. */
+function CorrectAnswerReveal({ card, answer }: CorrectAnswerRevealProps) {
+  if (!answer) {
+    return null;
+  }
+
+  const items = parseStringList(answer);
+
+  if (card.type === 'ordering') {
+    if (!items) {
+      return <p className="feedback-answer">{answer}</p>;
+    }
+
+    return (
+      <>
+        <p className="feedback-answer-label">The right order</p>
+        <ol className="feedback-order">
+          {items.map((id, index) => (
+            <li key={`${id}-${index}`}>
+              {card.steps?.find((step) => step.id === id)?.label ?? id}
+            </li>
+          ))}
+        </ol>
+      </>
+    );
+  }
+
+  if (card.type === 'ptz') {
+    if (!items) {
+      return <p className="feedback-answer">{answer}</p>;
+    }
+
+    return (
+      <>
+        <p className="feedback-answer-label">The right actions</p>
+        <ol className="feedback-order feedback-order--actions">
+          {items.map((action, index) => (
+            <li key={`${action}-${index}`}>{describePtzAction(action)}</li>
+          ))}
+        </ol>
+      </>
+    );
+  }
+
+  return null;
 }
 
 function GearIcon() {

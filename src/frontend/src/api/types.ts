@@ -36,6 +36,7 @@ export interface AttemptResultDto {
   dueAt: string;
   remaining: number;
   overlap: number | null;
+  correctAnswer: string | null;
 }
 
 export interface BagDto {
@@ -75,6 +76,9 @@ export interface CardAnswerDto {
   explanation: string;
   wrongReasons: Record<string, string>;
   targetRect: RectDto | null;
+  steps: OrderingStepDto[] | null;
+  correctOrder: string[] | null;
+  correctActions: string[] | null;
 }
 
 export interface CardDto {
@@ -88,6 +92,7 @@ export interface CardDto {
   targetRect: RectDto | null;
   explanation: string;
   wrongReasons: Record<string, string>;
+  steps: OrderingStepDto[] | null;
 }
 
 export interface ChoiceDto {
@@ -110,6 +115,8 @@ export interface CreateCardRequest {
   targetRect: RectDto | null;
   explanation: string;
   wrongReasons: Record<string, string>;
+  steps: OrderingStepDto[] | null;
+  correctActions: string[] | null;
 }
 
 export interface CreateDeckRequest {
@@ -177,6 +184,11 @@ export interface MemberProgressDto {
 export interface NextCardDto {
   cardId: string | null;
   remaining: number;
+}
+
+export interface OrderingStepDto {
+  id: string;
+  label: string;
 }
 
 export interface OverrideCheckRequest {

@@ -167,6 +167,10 @@ public static class ContentEndpoints
                 Explanation = request.Explanation,
                 WrongReasonsJson = ContentJson.Write(request.WrongReasons ?? new Dictionary<string, string>()),
                 CorrectChoiceId = request.CorrectChoiceId,
+                StepsJson = ContentJson.Write(request.Steps ?? []),
+                CorrectOrderJson = ContentJson.Write(
+                    (request.Steps ?? []).Select(step => step.Id).ToArray()),
+                CorrectActionsJson = ContentJson.Write(request.CorrectActions ?? []),
                 Ordinal = nextOrdinal
             };
 
@@ -198,7 +202,16 @@ public static class ContentEndpoints
                 card.CorrectChoiceId,
                 card.Explanation,
                 ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>()),
-                ContentJson.Read<RectDto?>(card.TargetRectJson, null)));
+                ContentJson.Read<RectDto?>(card.TargetRectJson, null),
+                card.Type == AuthoringRules.Ordering
+                    ? ContentJson.Read<IReadOnlyList<OrderingStepDto>>(card.StepsJson, [])
+                    : null,
+                card.Type == AuthoringRules.Ordering
+                    ? ContentJson.Read<IReadOnlyList<string>>(card.CorrectOrderJson, [])
+                    : null,
+                card.Type == AuthoringRules.Ptz
+                    ? ContentJson.Read<IReadOnlyList<string>>(card.CorrectActionsJson, [])
+                    : null));
         });
 
         // Gaps become work: assign a deck to the members who are short. Idempotent per deck and
@@ -260,5 +273,8 @@ public static class ContentEndpoints
         ContentJson.Read<IReadOnlyList<ChoiceDto>>(card.OptionsJson, []),
         ContentJson.Read<RectDto?>(card.TargetRectJson, null),
         card.Explanation,
-        ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>()));
+        ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>()),
+        card.Type == AuthoringRules.Ordering
+            ? ContentJson.Read<IReadOnlyList<OrderingStepDto>>(card.StepsJson, [])
+            : null);
 }

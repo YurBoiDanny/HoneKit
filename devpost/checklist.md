@@ -129,7 +129,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Does the unzip and push-in feel like opening your bag, and can you read the hub without hunting?
   Commit: `Open the bag into a full-screen hub`
 
-- [ ] **13. Ordering cards and the Bolin PTZ board**
+- [x] **13. Ordering cards and the Bolin PTZ board**
   Becomes usable: two new card types — reorder the camera setup steps from the real checklist, and use a Bolin-style board to recall presets and play traces. Both playable in decks and authorable.
   Why now: new content types need the reshaped skills and the hub's visual language in place first.
   PRD ref: `prd.md > The member loop`, `prd.md > Deck authoring`

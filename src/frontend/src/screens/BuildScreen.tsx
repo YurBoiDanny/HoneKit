@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FramingCanvas } from '../components/FramingCanvas';
+import { moveItem } from '../components/ordering';
+import { describePtzAction, formatPtzAction, type PtzVerb } from '../components/ptz';
 import {
   addCard,
   assignDeck,
@@ -23,7 +25,18 @@ const images = [
   { value: '/seed/stage-03.jpg', label: 'Sanctuary wide' },
 ];
 
-type CardType = 'fill-in-the-blank' | 'framing';
+const ptzCameras = [1, 2, 3, 4, 5, 6];
+const ptzTraceNumbers = [1, 2, 3, 4];
+const ptzPresetNumbers = Array.from({ length: 13 }, (_, index) => index + 1);
+
+type CardType = 'fill-in-the-blank' | 'framing' | 'ordering' | 'ptz';
+
+const cardTypeLabels: Record<CardType, string> = {
+  'fill-in-the-blank': 'Fill in the blank',
+  framing: 'Framing scenario',
+  ordering: 'Ordering',
+  ptz: 'PTZ board',
+};
 
 type ChoiceDraft = { label: string; reason: string };
 
@@ -51,6 +64,11 @@ export function BuildScreen() {
   ]);
   const [correctIndex, setCorrectIndex] = useState(0);
   const [targetRect, setTargetRect] = useState<RectDto>({ x: 0.3, y: 0.25, width: 0.4, height: 0.5 });
+  const [steps, setSteps] = useState<string[]>(['', '']);
+  const [correctActions, setCorrectActions] = useState<string[]>([]);
+  const [actionCamera, setActionCamera] = useState(1);
+  const [actionVerb, setActionVerb] = useState<PtzVerb>('preset');
+  const [actionNumber, setActionNumber] = useState(1);
   const [saving, setSaving] = useState(false);
 
   const deckLessons = (lessons.data ?? []).filter((lesson) => lesson.skillId === deck?.skillId);
@@ -93,6 +111,38 @@ export function BuildScreen() {
     setCorrectIndex((current) => (current >= index && current > 0 ? current - 1 : current));
   }
 
+  function chooseType(next: CardType) {
+    setType(next);
+    if (next !== 'ordering' && !imageRef) {
+      setImageRef(images[0].value);
+    }
+  }
+
+  function updateStep(index: number, label: string) {
+    setSteps((current) => current.map((step, i) => (i === index ? label : step)));
+  }
+
+  function moveStep(index: number, delta: number) {
+    setSteps((current) => moveItem(current, index, index + delta));
+  }
+
+  function removeStep(index: number) {
+    setSteps((current) => (current.length <= 2 ? current : current.filter((_, i) => i !== index)));
+  }
+
+  function changeActionVerb(verb: PtzVerb) {
+    setActionVerb(verb);
+    setActionNumber(1);
+  }
+
+  function addCorrectAction() {
+    setCorrectActions((current) => [...current, formatPtzAction(actionCamera, actionVerb, actionNumber)]);
+  }
+
+  function removeCorrectAction(index: number) {
+    setCorrectActions((current) => current.filter((_, i) => i !== index));
+  }
+
   async function add() {
     if (!deck) {
       return;
@@ -108,6 +158,22 @@ export function BuildScreen() {
         problems.push('A fill-in-the-blank needs at least two choices.');
       }
     }
+    if (type === 'framing' && !imageRef) {
+      problems.push('Choose an image for the framing scenario.');
+    }
+    if (type === 'ordering') {
+      if (steps.filter((step) => step.trim()).length < 2) {
+        problems.push('An ordering card needs at least two steps.');
+      } else if (steps.some((step) => !step.trim())) {
+        problems.push('Fill in every step, or remove the empty one.');
+      }
+    }
+    if (type === 'ptz' && !imageRef) {
+      problems.push('Choose an image for the PTZ viewfinder.');
+    }
+    if (type === 'ptz' && correctActions.length === 0) {
+      problems.push('Add at least one correct action to the PTZ card.');
+    }
 
     if (problems.length > 0) {
       setErrors(problems);
@@ -117,7 +183,7 @@ export function BuildScreen() {
     const body: CreateCardRequest = {
       lessonId,
       type,
-      imageRef,
+      imageRef: imageRef || null,
       prompt: prompt.trim(),
       choices:
         type === 'fill-in-the-blank'
@@ -134,6 +200,11 @@ export function BuildScreen() {
                 .filter(([, reason], index) => index !== correctIndex && reason.length > 0),
             )
           : {},
+      steps:
+        type === 'ordering'
+          ? steps.map((label, index) => ({ id: `s-${index}`, label: label.trim() }))
+          : null,
+      correctActions: type === 'ptz' ? correctActions : null,
     };
 
     setSaving(true);
@@ -151,6 +222,8 @@ export function BuildScreen() {
         { label: '', reason: '' },
       ]);
       setCorrectIndex(0);
+      setSteps(['', '']);
+      setCorrectActions([]);
       setNotice('Card added.');
     } catch (exception) {
       setErrors([exception instanceof Error ? exception.message : 'The card was not saved.']);
@@ -180,7 +253,7 @@ export function BuildScreen() {
     <section className="build-screen">
       <header className="plan-head">
         <h1>Deck building</h1>
-        <p>Make one small deck, add cards of the two types, and send it to the crew.</p>
+        <p>Make one small deck, add cards of the four types, and send it to the crew.</p>
       </header>
 
       {!deck ? (
@@ -230,7 +303,7 @@ export function BuildScreen() {
               <ol className="build-cards">
                 {cards.map((card) => (
                   <li key={card.id}>
-                    <span>{card.type === 'framing' ? 'Framing scenario' : 'Fill in the blank'}</span>
+                    <span>{cardTypeLabels[card.type as CardType] ?? card.type}</span>
                     <p>{card.prompt}</p>
                   </li>
                 ))}
@@ -259,7 +332,7 @@ export function BuildScreen() {
                 type="button"
                 className={type === 'fill-in-the-blank' ? 'is-on' : ''}
                 aria-pressed={type === 'fill-in-the-blank'}
-                onClick={() => setType('fill-in-the-blank')}
+                onClick={() => chooseType('fill-in-the-blank')}
               >
                 Fill in the blank
               </button>
@@ -267,9 +340,25 @@ export function BuildScreen() {
                 type="button"
                 className={type === 'framing' ? 'is-on' : ''}
                 aria-pressed={type === 'framing'}
-                onClick={() => setType('framing')}
+                onClick={() => chooseType('framing')}
               >
                 Framing scenario
+              </button>
+              <button
+                type="button"
+                className={type === 'ordering' ? 'is-on' : ''}
+                aria-pressed={type === 'ordering'}
+                onClick={() => chooseType('ordering')}
+              >
+                Ordering
+              </button>
+              <button
+                type="button"
+                className={type === 'ptz' ? 'is-on' : ''}
+                aria-pressed={type === 'ptz'}
+                onClick={() => chooseType('ptz')}
+              >
+                PTZ board
               </button>
             </div>
 
@@ -295,8 +384,9 @@ export function BuildScreen() {
             </label>
 
             <label className="field">
-              <span>Image</span>
+              <span>{type === 'ordering' ? 'Image (optional)' : 'Image'}</span>
               <select value={imageRef} onChange={(event) => setImageRef(event.target.value)}>
+                {type === 'ordering' && <option value="">No image</option>}
                 {images.map((image) => (
                   <option key={image.value} value={image.value}>
                     {image.label}
@@ -356,7 +446,7 @@ export function BuildScreen() {
                   Add another choice
                 </button>
               </fieldset>
-            ) : (
+            ) : type === 'framing' ? (
               <div className="framing-block">
                 <FramingCanvas
                   imageRef={imageRef}
@@ -366,6 +456,136 @@ export function BuildScreen() {
                 />
                 <p className="frame-hint">Place the frame where a good answer should land.</p>
               </div>
+            ) : type === 'ordering' ? (
+              <fieldset className="build-choices">
+                <legend>Steps, in the right order</legend>
+
+                <ol className="build-steps">
+                  {steps.map((step, index) => (
+                    <li className="build-step" key={index}>
+                      <span className="build-step-num" aria-hidden="true">
+                        {index + 1}
+                      </span>
+                      <label className="field build-step-field">
+                        <span className="sr-only">Step {index + 1}</span>
+                        <input
+                          value={step}
+                          placeholder="What happens at this step?"
+                          onChange={(event) => updateStep(index, event.target.value)}
+                        />
+                      </label>
+                      <div className="build-step-tools">
+                        <button
+                          type="button"
+                          className="step-tool"
+                          aria-label={`Move step ${index + 1} up`}
+                          disabled={index === 0}
+                          onClick={() => moveStep(index, -1)}
+                        >
+                          <span aria-hidden="true">↑</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="step-tool"
+                          aria-label={`Move step ${index + 1} down`}
+                          disabled={index === steps.length - 1}
+                          onClick={() => moveStep(index, 1)}
+                        >
+                          <span aria-hidden="true">↓</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="step-tool"
+                          aria-label={`Remove step ${index + 1}`}
+                          disabled={steps.length <= 2}
+                          onClick={() => removeStep(index)}
+                        >
+                          <span aria-hidden="true">×</span>
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() => setSteps((current) => [...current, ''])}
+                >
+                  Add a step
+                </button>
+                <p className="frame-hint">
+                  The order you leave the steps in is the correct one. Players see a shuffled copy.
+                </p>
+              </fieldset>
+            ) : (
+              <fieldset className="build-choices">
+                <legend>Correct actions, in order</legend>
+
+                <div className="build-ptz-row">
+                  <label className="field">
+                    <span>Camera</span>
+                    <select
+                      value={actionCamera}
+                      onChange={(event) => setActionCamera(Number(event.target.value))}
+                    >
+                      {ptzCameras.map((number) => (
+                        <option key={number} value={number}>
+                          Camera {number}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="field">
+                    <span>Action</span>
+                    <select
+                      value={actionVerb}
+                      onChange={(event) => changeActionVerb(event.target.value as PtzVerb)}
+                    >
+                      <option value="preset">Preset</option>
+                      <option value="trace">Trace</option>
+                    </select>
+                  </label>
+
+                  <label className="field">
+                    <span>Number</span>
+                    <select
+                      value={actionNumber}
+                      onChange={(event) => setActionNumber(Number(event.target.value))}
+                    >
+                      {(actionVerb === 'preset' ? ptzPresetNumbers : ptzTraceNumbers).map((number) => (
+                        <option key={number} value={number}>
+                          {number}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <button type="button" className="button-primary build-ptz-add" onClick={addCorrectAction}>
+                    Add action
+                  </button>
+                </div>
+
+                {correctActions.length === 0 ? (
+                  <p className="frame-hint">Add the actions in the order they should be pressed.</p>
+                ) : (
+                  <ol className="build-actions">
+                    {correctActions.map((action, index) => (
+                      <li key={`${action}-${index}`}>
+                        <span>{describePtzAction(action)}</span>
+                        <button
+                          type="button"
+                          className="text-button"
+                          onClick={() => removeCorrectAction(index)}
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </fieldset>
             )}
 
             <label className="field">

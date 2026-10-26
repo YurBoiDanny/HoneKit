@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using HoneKit.Contracts;
 
 namespace HoneKit.Content.Domain;
@@ -17,6 +18,23 @@ public static class AuthoringRules
     public const string FillInTheBlank = "fill-in-the-blank";
 
     public const string Framing = "framing";
+
+    public const string Ordering = "ordering";
+
+    public const string Ptz = "ptz";
+
+    public const int MinSteps = 2;
+
+    public const int MaxSteps = 8;
+
+    public const int MinActions = 1;
+
+    public const int MaxActions = 6;
+
+    // cam1-6, a preset 1-13 or a trace 1-4: the whole Bolin board in one pattern.
+    private static readonly Regex ActionPattern = new(
+        "^(cam[1-6]:(preset:([1-9]|1[0-3])|trace:[1-4]))$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     public static IReadOnlyList<string> ValidateDeck(
         string? role,
@@ -72,9 +90,9 @@ public static class AuthoringRules
 
         var type = (request.Type ?? "").Trim();
 
-        if (type is not (FillInTheBlank or Framing))
+        if (type is not (FillInTheBlank or Framing or Ordering or Ptz))
         {
-            errors.Add("Cards are either fill-in-the-blank or framing.");
+            errors.Add("Cards are fill-in-the-blank, framing, ordering or ptz.");
             return errors;
         }
 
@@ -88,18 +106,26 @@ public static class AuthoringRules
             errors.Add("Add an explanation of the right answer.");
         }
 
-        if (string.IsNullOrWhiteSpace(request.ImageRef))
+        // An ordering card can be text-only; every other type is image-led in the POC.
+        if (type != Ordering && string.IsNullOrWhiteSpace(request.ImageRef))
         {
             errors.Add("Add an image for the card.");
         }
 
-        if (type == FillInTheBlank)
+        switch (type)
         {
-            ValidateFillInTheBlank(request, errors);
-        }
-        else
-        {
-            ValidateFraming(request, errors);
+            case FillInTheBlank:
+                ValidateFillInTheBlank(request, errors);
+                break;
+            case Framing:
+                ValidateFraming(request, errors);
+                break;
+            case Ordering:
+                ValidateOrdering(request, errors);
+                break;
+            default:
+                ValidatePtz(request, errors);
+                break;
         }
 
         return errors;
@@ -183,6 +209,89 @@ public static class AuthoringRules
             errors.Add("A framing card does not have a correct choice.");
         }
     }
+
+    private static void ValidateOrdering(CreateCardRequest request, List<string> errors)
+    {
+        var steps = request.Steps ?? [];
+
+        if (steps.Count is < MinSteps or > MaxSteps)
+        {
+            errors.Add($"An ordering card needs {MinSteps} to {MaxSteps} steps.");
+        }
+
+        if (steps.Any(step => string.IsNullOrWhiteSpace(step.Id)))
+        {
+            errors.Add("Every step needs an id.");
+        }
+
+        var ids = steps
+            .Select(step => step.Id)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .ToArray();
+
+        if (ids.Distinct(StringComparer.Ordinal).Count() != ids.Length)
+        {
+            errors.Add("Step ids must be unique.");
+        }
+
+        if (steps.Any(step => string.IsNullOrWhiteSpace(step.Label)))
+        {
+            errors.Add("Every step needs a label.");
+        }
+
+        if ((request.Choices?.Count ?? 0) > 0)
+        {
+            errors.Add("An ordering card does not have choices.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.CorrectChoiceId))
+        {
+            errors.Add("An ordering card does not have a correct choice.");
+        }
+
+        if (request.TargetRect is not null)
+        {
+            errors.Add("An ordering card does not have a target frame.");
+        }
+    }
+
+    private static void ValidatePtz(CreateCardRequest request, List<string> errors)
+    {
+        var actions = request.CorrectActions ?? [];
+
+        if (actions.Count is < MinActions or > MaxActions)
+        {
+            errors.Add($"A ptz card needs {MinActions} to {MaxActions} actions.");
+        }
+
+        foreach (var action in actions.Where(action => !IsValidAction(action)))
+        {
+            errors.Add($"'{action}' is not a camera action. Use cam1-6:preset:1-13 or cam1-6:trace:1-4.");
+        }
+
+        if ((request.Steps?.Count ?? 0) > 0)
+        {
+            errors.Add("A ptz card does not have steps.");
+        }
+
+        if ((request.Choices?.Count ?? 0) > 0)
+        {
+            errors.Add("A ptz card does not have choices.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.CorrectChoiceId))
+        {
+            errors.Add("A ptz card does not have a correct choice.");
+        }
+
+        if (request.TargetRect is not null)
+        {
+            errors.Add("A ptz card does not have a target frame.");
+        }
+    }
+
+    private static bool IsValidAction(string? action) =>
+        !string.IsNullOrWhiteSpace(action) && ActionPattern.IsMatch(action.Trim());
 
     private static bool IsInsideImage(RectDto rect) =>
         double.IsFinite(rect.X)

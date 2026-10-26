@@ -19,6 +19,10 @@ public sealed class ContentClient(HttpClient http)
 
     public const string Framing = "framing";
 
+    public const string Ordering = "ordering";
+
+    public const string Ptz = "ptz";
+
     /// <summary>The deck, or null when Content does not know it.</summary>
     public async Task<DeckPayload?> GetDeckAsync(string deckId, CancellationToken cancellationToken)
     {

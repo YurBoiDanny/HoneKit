@@ -5,10 +5,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Phase 2 reshaped the skills and decks. EnsureCreated only ever creates a missing file, so the
-// file name carries the seed version: a container rebuilt onto an earlier volume starts a fresh
-// seeded database rather than mixing the old skill ids with the new catalogue.
-builder.AddServiceSqlite<ContentDbContext>("content-v4.db");
+// Slice 13 added the ordering and ptz columns. EnsureCreated only ever creates a missing file, so
+// the file name carries the schema and seed version: a container rebuilt onto an earlier volume
+// starts a fresh seeded database rather than querying columns that are not there.
+builder.AddServiceSqlite<ContentDbContext>("content-v5.db");
 
 if (builder.Environment.IsDevelopment())
 {

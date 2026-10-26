@@ -12,6 +12,8 @@ public sealed record DeckSummaryDto(string Id, string Role, string Name, string 
 
 public sealed record ChoiceDto(string Id, string Label);
 
+public sealed record OrderingStepDto(string Id, string Label);
+
 public sealed record RectDto(double X, double Y, double Width, double Height);
 
 public sealed record CardDto(
@@ -24,7 +26,8 @@ public sealed record CardDto(
     IReadOnlyList<ChoiceDto> Choices,
     RectDto? TargetRect,
     string Explanation,
-    IReadOnlyDictionary<string, string> WrongReasons);
+    IReadOnlyDictionary<string, string> WrongReasons,
+    IReadOnlyList<OrderingStepDto>? Steps = null);
 
 public sealed record MemberDto(
     string Id,
@@ -240,7 +243,9 @@ public sealed record CreateCardRequest(
     string? CorrectChoiceId,
     RectDto? TargetRect,
     string Explanation,
-    IReadOnlyDictionary<string, string> WrongReasons);
+    IReadOnlyDictionary<string, string> WrongReasons,
+    IReadOnlyList<OrderingStepDto>? Steps = null,
+    IReadOnlyList<string>? CorrectActions = null);
 
 // ---- the member loop -------------------------------------------------------------------
 
@@ -259,7 +264,10 @@ public sealed record CardAnswerDto(
     string? CorrectChoiceId,
     string Explanation,
     IReadOnlyDictionary<string, string> WrongReasons,
-    RectDto? TargetRect = null);
+    RectDto? TargetRect = null,
+    IReadOnlyList<OrderingStepDto>? Steps = null,
+    IReadOnlyList<string>? CorrectOrder = null,
+    IReadOnlyList<string>? CorrectActions = null);
 
 public sealed record AttemptResultDto(
     bool Correct,
@@ -269,7 +277,8 @@ public sealed record AttemptResultDto(
     int? RequeuedAfter,
     DateTimeOffset DueAt,
     int Remaining,
-    double? Overlap = null);
+    double? Overlap = null,
+    string? CorrectAnswer = null);
 
 public sealed record FinishSessionRequest(bool ExitedEarly);
 

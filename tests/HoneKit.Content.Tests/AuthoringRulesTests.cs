@@ -17,6 +17,12 @@ public sealed class AuthoringRulesTests
         new("presets-traces-2", "presets-traces", 2, "Traces and tracking")
     ];
 
+    private static readonly LessonDto[] SetupLessons =
+    [
+        new("setup-1", "setup", 1, "Build the camera"),
+        new("setup-2", "setup", 2, "The floor camera")
+    ];
+
     private static CreateCardRequest ValidFillInTheBlank(
         string prompt = "Before a cut, the ___ is the camera you will be on when the shot lands.",
         IReadOnlyList<ChoiceDto>? choices = null,
@@ -167,6 +173,131 @@ public sealed class AuthoringRulesTests
             error => error.Contains("Draw the target frame", StringComparison.Ordinal));
     }
 
+
+    private static CreateCardRequest ValidOrdering(IReadOnlyList<OrderingStepDto>? steps = null) =>
+        new(
+            LessonId: "setup-1",
+            Type: "ordering",
+            ImageRef: "/seed/stage-03.jpg",
+            Prompt: "Put the Bolin controller setup in the right order.",
+            Choices: [],
+            CorrectChoiceId: null,
+            TargetRect: null,
+            Explanation: "Ethernet before power, then presets, then traces.",
+            WrongReasons: new Dictionary<string, string>(),
+            Steps: steps ?? [
+                new OrderingStepDto("connect-ethernet", "Connect ethernet to the Bolin controllers"),
+                new OrderingStepDto("power-on", "Turn the controllers on"),
+                new OrderingStepDto("check-presets", "Check presets 1–13 are framed and exposed")
+            ]);
+
+    private static CreateCardRequest ValidPtz(IReadOnlyList<string>? actions = null) =>
+        new(
+            LessonId: "setup-2",
+            Type: "ptz",
+            ImageRef: "/seed/stage-03.jpg",
+            Prompt: "Park crowd camera 3 for set-down.",
+            Choices: [],
+            CorrectChoiceId: null,
+            TargetRect: null,
+            Explanation: "Crowd cameras go to preset 10 at set-down.",
+            WrongReasons: new Dictionary<string, string>(),
+            CorrectActions: actions ?? ["cam3:preset:10"]);
+
+    [Fact]
+    public void A_valid_ordering_card_passes()
+    {
+        Assert.Empty(AuthoringRules.ValidateCard(ValidOrdering(), "setup", SetupLessons));
+    }
+
+    [Fact]
+    public void Ordering_needs_two_to_eight_unique_steps_with_labels()
+    {
+        Assert.Contains(AuthoringRules.ValidateCard(
+                ValidOrdering([new OrderingStepDto("only", "Only step")]), "setup", SetupLessons),
+            error => error.Contains("2 to 8", StringComparison.Ordinal));
+
+        Assert.Contains(AuthoringRules.ValidateCard(
+                ValidOrdering(
+                [
+                    new OrderingStepDto("same", "One"),
+                    new OrderingStepDto("same", "Two")
+                ]), "setup", SetupLessons),
+            error => error.Contains("unique", StringComparison.Ordinal));
+
+        Assert.Contains(AuthoringRules.ValidateCard(
+                ValidOrdering(
+                [
+                    new OrderingStepDto("first", ""),
+                    new OrderingStepDto("second", "Second")
+                ]), "setup", SetupLessons),
+            error => error.Contains("label", StringComparison.OrdinalIgnoreCase));
+
+        var tooMany = Enumerable.Range(1, 9)
+            .Select(index => new OrderingStepDto($"step-{index}", $"Step {index}"))
+            .ToArray();
+
+        Assert.Contains(AuthoringRules.ValidateCard(ValidOrdering(tooMany), "setup", SetupLessons),
+            error => error.Contains("2 to 8", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void An_ordering_card_has_no_choices_or_target()
+    {
+        var card = ValidOrdering() with
+        {
+            Choices = [new ChoiceDto("a", "A")],
+            CorrectChoiceId = "a",
+            TargetRect = new RectDto(0.2, 0.2, 0.4, 0.4)
+        };
+
+        var errors = AuthoringRules.ValidateCard(card, "setup", SetupLessons);
+
+        Assert.Contains(errors, error => error.Contains("does not have choices", StringComparison.Ordinal));
+        Assert.Contains(errors, error => error.Contains("does not have a correct choice", StringComparison.Ordinal));
+        Assert.Contains(errors, error => error.Contains("does not have a target frame", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_valid_ptz_card_passes()
+    {
+        Assert.Empty(AuthoringRules.ValidateCard(ValidPtz(), "setup", SetupLessons));
+        Assert.Empty(AuthoringRules.ValidateCard(ValidPtz(["CAM3:PRESET:10"]), "setup", SetupLessons));
+    }
+
+    [Fact]
+    public void Ptz_actions_must_fit_the_board()
+    {
+        foreach (var action in new[] { "cam7:preset:1", "cam3:preset:14", "cam3:trace:5", "preset:10", "" })
+        {
+            Assert.Contains(AuthoringRules.ValidateCard(ValidPtz([action]), "setup", SetupLessons),
+                error => error.Contains("is not a camera action", StringComparison.Ordinal));
+        }
+
+        Assert.Contains(AuthoringRules.ValidateCard(ValidPtz([]), "setup", SetupLessons),
+            error => error.Contains("1 to 6 actions", StringComparison.Ordinal));
+
+        var seven = Enumerable.Range(1, 7).Select(index => $"cam{index % 6 + 1}:preset:{index}").ToArray();
+
+        Assert.Contains(AuthoringRules.ValidateCard(ValidPtz(seven), "setup", SetupLessons),
+            error => error.Contains("1 to 6 actions", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void A_ptz_card_has_no_steps_or_choices()
+    {
+        var card = ValidPtz() with
+        {
+            Steps = [new OrderingStepDto("a", "A"), new OrderingStepDto("b", "B")],
+            Choices = [new ChoiceDto("a", "A")]
+        };
+
+        var errors = AuthoringRules.ValidateCard(card, "setup", SetupLessons);
+
+        Assert.Contains(errors, error => error.Contains("does not have steps", StringComparison.Ordinal));
+        Assert.Contains(errors, error => error.Contains("does not have choices", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void The_seeded_card_shapes_pass()
     {
@@ -209,7 +340,39 @@ public sealed class AuthoringRulesTests
             Explanation: "The lectern sits right of centre.",
             WrongReasons: new Dictionary<string, string>());
 
+        var sequence = new CreateCardRequest(
+            LessonId: "setup-1",
+            Type: "ordering",
+            ImageRef: "/seed/stage-03.jpg",
+            Prompt: "Put the Bolin controller setup in the right order.",
+            Choices: [],
+            CorrectChoiceId: null,
+            TargetRect: null,
+            Explanation: "Ethernet before power, then presets, then traces.",
+            WrongReasons: new Dictionary<string, string>(),
+            Steps:
+            [
+                new OrderingStepDto("connect-ethernet", "Connect ethernet to the Bolin controllers"),
+                new OrderingStepDto("power-on", "Turn the controllers on"),
+                new OrderingStepDto("check-presets", "Check presets 1–13 are framed and exposed"),
+                new OrderingStepDto("check-traces", "Check traces 1–4 play as intended")
+            ]);
+
+        var park = new CreateCardRequest(
+            LessonId: "setup-2",
+            Type: "ptz",
+            ImageRef: "/seed/stage-03.jpg",
+            Prompt: "Park crowd camera 3 for set-down.",
+            Choices: [],
+            CorrectChoiceId: null,
+            TargetRect: null,
+            Explanation: "Crowd cameras go to preset 10 at set-down; stage cameras to preset 1.",
+            WrongReasons: new Dictionary<string, string>(),
+            CorrectActions: ["cam3:preset:10"]);
+
         Assert.Empty(AuthoringRules.ValidateCard(headroom, "framing", framingLessons));
         Assert.Empty(AuthoringRules.ValidateCard(lectern, "framing", framingLessons));
+        Assert.Empty(AuthoringRules.ValidateCard(sequence, "setup", SetupLessons));
+        Assert.Empty(AuthoringRules.ValidateCard(park, "setup", SetupLessons));
     }
 }

@@ -217,6 +217,7 @@ public static class ProgressEndpoints
             bool correct;
             string? wrongReason = null;
             double? overlap = null;
+            string? correctAnswer = null;
 
             switch (card.Type)
             {
@@ -251,6 +252,42 @@ public static class ProgressEndpoints
 
                     overlap = FramingRules.Overlap(submittedRect!, answer.TargetRect);
                     correct = FramingRules.IsCorrect(overlap.Value);
+                    break;
+                }
+
+                case ContentClient.Ordering:
+                {
+                    if (!SequenceRules.TryParseAnswer(request.Answer, out var submittedSteps, out var parseError))
+                    {
+                        return TypedResults.BadRequest(parseError);
+                    }
+
+                    var expectedOrder = answer.CorrectOrder ?? [];
+                    correct = SequenceRules.MatchesExpected(submittedSteps, expectedOrder, StringComparer.Ordinal);
+
+                    if (!correct)
+                    {
+                        correctAnswer = SequenceRules.DescribeOrder(answer.Steps ?? [], expectedOrder);
+                    }
+
+                    break;
+                }
+
+                case ContentClient.Ptz:
+                {
+                    if (!SequenceRules.TryParseAnswer(request.Answer, out var submittedActions, out var parseError))
+                    {
+                        return TypedResults.BadRequest(parseError);
+                    }
+
+                    var expectedActions = answer.CorrectActions ?? [];
+                    correct = SequenceRules.MatchesExpected(submittedActions, expectedActions, StringComparer.OrdinalIgnoreCase);
+
+                    if (!correct)
+                    {
+                        correctAnswer = SequenceRules.DescribeActions(expectedActions);
+                    }
+
                     break;
                 }
 
@@ -311,7 +348,8 @@ public static class ProgressEndpoints
                 requeuedAfter,
                 dueAt,
                 remaining.Count,
-                overlap));
+                overlap,
+                correctAnswer));
         });
 
         api.MapPost("/sessions/{id}/finish", async Task<Results<Ok<SessionResultDto>, NotFound, ProblemHttpResult>> (
