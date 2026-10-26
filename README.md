@@ -27,7 +27,7 @@ set -a; source ./.env.local; set +a
 Without `.env.local`, the fixture reader is used and no key is needed.
 
 ```bash
-# inner loop: Aspire runs the services and the dashboard
+# inner loop: services + Vite with HMR, and the Aspire dashboard
 aspire run
 
 # the deployed shape: generate compose, build images, start the stack

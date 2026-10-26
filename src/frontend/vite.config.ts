@@ -13,6 +13,11 @@ const apiProxy = (prefix: string, name: string, fallback: string) => ({
   rewrite: (path: string) => path.replace(new RegExp(`^/api/${prefix}`), '/api'),
 });
 
+const apiPass = (name: string, fallback: string) => ({
+  target: service(name, fallback),
+  changeOrigin: true,
+});
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -21,6 +26,9 @@ export default defineConfig({
       '/api/content': apiProxy('content', 'content', 'http://localhost:5301'),
       '/api/progress': apiProxy('progress', 'progress', 'http://localhost:5302'),
       '/api/roster': apiProxy('roster', 'roster', 'http://localhost:5303'),
+      '/api/requirements': apiPass('requirements', 'http://localhost:5304'),
+      '/api/recommendations': apiPass('recommendations', 'http://localhost:5305'),
+      '/api/plans': apiPass('recommendations', 'http://localhost:5305'),
     },
   },
 });

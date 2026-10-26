@@ -68,21 +68,40 @@ var recommendations = builder.AddProject<Projects.HoneKit_Recommendations>("reco
     .WithReference(content)
     .WaitFor(content);
 
-// Hand-written nginx image: PublishAsStaticWebsite only proxies one backend, so the frontend is a
-// separate container. The Dockerfile is owned by the frontend agent; this only references its path.
-builder.AddDockerfile("frontend", "../frontend")
-    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform)
-    .WithHttpEndpoint(targetPort: 80, port: 8080, name: "http")
-    .WithExternalHttpEndpoints()
-    .WithReference(content)
-    .WithReference(progress)
-    .WithReference(roster)
-    .WithReference(requirements)
-    .WithReference(recommendations)
-    .WaitFor(content)
-    .WaitFor(progress)
-    .WaitFor(roster)
-    .WaitFor(requirements)
-    .WaitFor(recommendations);
+// Dev: Vite, with its proxy pointed at the service endpoints Aspire injects.
+// Publish: the hand-written nginx image, which proxies the five services by Compose name.
+if (builder.ExecutionContext.IsRunMode)
+{
+    builder.AddViteApp("frontend", "../frontend")
+        .WithHttpEndpoint(port: 8080, targetPort: 5173, name: "http")
+        .WithExternalHttpEndpoints()
+        .WithReference(content)
+        .WithReference(progress)
+        .WithReference(roster)
+        .WithReference(requirements)
+        .WithReference(recommendations)
+        .WaitFor(content)
+        .WaitFor(progress)
+        .WaitFor(roster)
+        .WaitFor(requirements)
+        .WaitFor(recommendations);
+}
+else
+{
+    builder.AddDockerfile("frontend", "../frontend")
+        .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform)
+        .WithHttpEndpoint(targetPort: 80, port: 8080, name: "http")
+        .WithExternalHttpEndpoints()
+        .WithReference(content)
+        .WithReference(progress)
+        .WithReference(roster)
+        .WithReference(requirements)
+        .WithReference(recommendations)
+        .WaitFor(content)
+        .WaitFor(progress)
+        .WaitFor(roster)
+        .WaitFor(requirements)
+        .WaitFor(recommendations);
+}
 
 builder.Build().Run();
