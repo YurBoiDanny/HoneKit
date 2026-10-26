@@ -17,6 +17,15 @@ What the camera crew learns becomes tools and patches in a bag they carry.
 
 ## Run it
 
+First-time setup, with a live reader:
+
+```bash
+cp .env.local.example .env.local   # fill in AI__APIKEY
+./scripts/start-demo.sh
+```
+
+Without `.env.local` the script deploys the fixture reader, which needs no key.
+
 ```bash
 # the deployed shape: generate compose, build images, start the stack
 aspire deploy -o aspire-output
