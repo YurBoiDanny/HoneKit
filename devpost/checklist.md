@@ -89,7 +89,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Ask for a roster, then switch strategies and override one person. Does the app explain the cost without nagging you, and is the gap in live switching obvious enough to act on?
   Commit: `Recommend a roster and save the plan`
 
-- [ ] **9. A leader can author a deck**
+- [x] **9. A leader can author a deck**
   Becomes usable: Create a deck for a role, add both card types — including drawing a framing card's target frame — write the right-answer explanation and a reason per wrong choice, and assign it so it shows up in the crew's deck list.
   Why now: Deliberately last among features. `prd.md > Open Questions` names authoring as the first thing to cut if the build runs long, so it sits where cutting it costs nothing else. Everything it needs — card shapes, target-frame rendering, assignment reads — already exists.
   PRD ref: `prd.md > Deck authoring`, `prd.md > Product Decisions` (authoring stays, trimmed), `prd.md > Open Questions` (cut line)

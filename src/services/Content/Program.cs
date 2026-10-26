@@ -5,11 +5,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Slice 8 added the assignments table and a second seeded deck. EnsureCreated only ever creates a
-// missing file, so the file name carries the schema version: a container rebuilt onto an earlier
-// volume starts a fresh seeded database instead of querying a table that is not there. Content is
-// seeded curriculum, so there is nothing a leader authored to lose.
-builder.AddServiceSqlite<ContentDbContext>("content-v2.db");
+// Slice 9 added cards.ordinal so authored cards keep their insertion order. EnsureCreated only ever
+// creates a missing file, so the file name carries the schema version: a container rebuilt onto an
+// earlier volume starts a fresh seeded database. Content is seeded curriculum; authored decks begin
+// with this slice.
+builder.AddServiceSqlite<ContentDbContext>("content-v3.db");
 
 if (builder.Environment.IsDevelopment())
 {

@@ -89,6 +89,24 @@ export interface CompletionsDto {
   lessonIds: string[];
 }
 
+export interface CreateCardRequest {
+  lessonId: string;
+  type: string;
+  imageRef: string | null;
+  prompt: string;
+  choices: ChoiceDto[];
+  correctChoiceId: string | null;
+  targetRect: RectDto | null;
+  explanation: string;
+  wrongReasons: Record<string, string>;
+}
+
+export interface CreateDeckRequest {
+  role: string;
+  name: string;
+  skillId: string;
+}
+
 export interface DeckSummaryDto {
   id: string;
   role: string;

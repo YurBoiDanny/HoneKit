@@ -1760,3 +1760,78 @@
   padding: 4px 0;
   font-size: 0.9rem;
 }
+
+/* ---------- deck building ---------- */
+
+.build-screen {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.build-create {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 18px;
+  margin-top: 30px;
+}
+
+.build-create .field {
+  margin-bottom: 0;
+}
+
+.build-create .button-primary {
+  margin-bottom: 0;
+}
+
+.build-cards {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.build-cards li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--paper-edge);
+}
+
+.build-cards li span {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.build-cards li p {
+  margin-top: 2px;
+}
+
+.build-choices {
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.build-choices legend {
+  padding: 8px 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.build-choice {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 8px;
+}
+
+.build-choice .check-row {
+  min-height: 36px;
+}
+
+.build-choice .field {
+  margin-bottom: 8px;
+}
+
+.req-panel .strategy-switch {
+  margin-bottom: 16px;
+}

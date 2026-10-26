@@ -217,6 +217,21 @@ public sealed record PlanSummaryDto(
     DateTimeOffset CreatedAt,
     int MemberCount);
 
+// ---- authoring --------------------------------------------------------------------------
+
+public sealed record CreateDeckRequest(string Role, string Name, string SkillId);
+
+public sealed record CreateCardRequest(
+    string LessonId,
+    string Type,
+    string? ImageRef,
+    string Prompt,
+    IReadOnlyList<ChoiceDto> Choices,
+    string? CorrectChoiceId,
+    RectDto? TargetRect,
+    string Explanation,
+    IReadOnlyDictionary<string, string> WrongReasons);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

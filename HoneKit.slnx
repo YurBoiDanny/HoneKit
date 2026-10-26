@@ -24,6 +24,7 @@
     <Project Path="tools/HoneKit.ContractGen/HoneKit.ContractGen.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/HoneKit.Content.Tests/HoneKit.Content.Tests.csproj" />
     <Project Path="tests/HoneKit.Progress.Tests/HoneKit.Progress.Tests.csproj" />
     <Project Path="tests/HoneKit.Recommendations.Tests/HoneKit.Recommendations.Tests.csproj" />
     <Project Path="tests/HoneKit.Requirements.Tests/HoneKit.Requirements.Tests.csproj" />

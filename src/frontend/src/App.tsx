@@ -1,5 +1,6 @@
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BagScreen } from './screens/BagScreen';
+import { BuildScreen } from './screens/BuildScreen';
 import { CrewScreen } from './screens/CrewScreen';
 import { DeckScreen } from './screens/DeckScreen';
 import { PlanScreen } from './screens/PlanScreen';
@@ -15,6 +16,7 @@ export default function App() {
     pathname.startsWith('/deck') ||
     pathname.startsWith('/crew');
   const onPlan = pathname.startsWith('/plan');
+  const onBuild = pathname.startsWith('/build');
 
   return (
     <div className="page">
@@ -27,9 +29,9 @@ export default function App() {
           <Link to="/team" className={inBagFlow ? 'is-here' : ''} aria-current={inBagFlow ? 'page' : undefined}>
             Bag
           </Link>
-          <span className="is-later" aria-disabled="true" title="Later in the build">
+          <Link to="/build" className={onBuild ? 'is-here' : ''} aria-current={onBuild ? 'page' : undefined}>
             Deck building
-          </span>
+          </Link>
           <Link to="/plan" className={onPlan ? 'is-here' : ''} aria-current={onPlan ? 'page' : undefined}>
             Meeting plan
           </Link>
@@ -54,6 +56,7 @@ export default function App() {
         <Route path="/crew" element={<CrewScreen />} />
         <Route path="/crew/:memberId" element={<TeammateBagScreen />} />
         <Route path="/plan" element={<PlanScreen />} />
+        <Route path="/build" element={<BuildScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
@@ -61,9 +64,9 @@ export default function App() {
         <Link to="/team" className={inBagFlow ? 'is-here' : ''} aria-current={inBagFlow ? 'page' : undefined}>
           Bag
         </Link>
-        <span className="is-later" aria-disabled="true">
+        <Link to="/build" className={onBuild ? 'is-here' : ''} aria-current={onBuild ? 'page' : undefined}>
           Decks
-        </span>
+        </Link>
         <Link to="/plan" className={onPlan ? 'is-here' : ''} aria-current={onPlan ? 'page' : undefined}>
           Plan
         </Link>

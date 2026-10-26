@@ -6,6 +6,9 @@ import type {
   DeckSummaryDto,
   NextCardDto,
   ParseFailureDto,
+  CreateCardRequest,
+  CreateDeckRequest,
+  LessonDto,
   OverrideWarningDto,
   PlanDto,
   PlanSummaryDto,
@@ -181,6 +184,15 @@ export async function parseBrief(file: File | null, text: string): Promise<Brief
     return { ok: false, failure: fallback };
   }
 }
+
+export const fetchLessons = (role: string) =>
+  request<LessonDto[]>(`/api/content/roles/${role}/lessons`);
+
+export const createDeck = (body: CreateDeckRequest) =>
+  post<DeckSummaryDto>('/api/content/decks', body);
+
+export const addCard = (deckId: string, body: CreateCardRequest) =>
+  post<CardDto>(`/api/content/decks/${deckId}/cards`, body);
 
 export const fetchRecommendations = (requirementId: string, strategy: string) =>
   post<RecommendationDto>('/api/recommendations', { requirementId, strategy });
