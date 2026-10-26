@@ -70,6 +70,20 @@ public sealed record BagWallMemberDto(
 
 public sealed record BagWallDto(string Role, string Name, IReadOnlyList<BagWallMemberDto> Members);
 
+public sealed record TeamToolDto(
+    string SkillId,
+    string Name,
+    int FilledLessons,
+    int TotalLessons,
+    double Percent);
+
+public sealed record TeamBagDto(
+    string Role,
+    string Name,
+    int MemberCount,
+    IReadOnlyList<TeamToolDto> Tools,
+    string Wear);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

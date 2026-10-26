@@ -20,8 +20,8 @@ export function CrewScreen() {
   return (
     <section className="wall-screen">
       <div className="deck-bar">
-        <Link className="text-link" to="/">
-          Back to your bag
+        <Link className="text-link" to="/team">
+          Back to the team bag
         </Link>
       </div>
 

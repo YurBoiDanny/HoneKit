@@ -148,9 +148,25 @@ export interface SkillDto {
   lessonCount: number;
 }
 
+export interface TeamBagDto {
+  role: string;
+  name: string;
+  memberCount: number;
+  tools: TeamToolDto[];
+  wear: string;
+}
+
 export interface TeamDto {
   role: string;
   name: string;
   members: MemberDto[];
+}
+
+export interface TeamToolDto {
+  skillId: string;
+  name: string;
+  filledLessons: number;
+  totalLessons: number;
+  percent: number;
 }
 

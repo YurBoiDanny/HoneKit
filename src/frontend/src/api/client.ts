@@ -7,6 +7,7 @@ import type {
   NextCardDto,
   SessionDto,
   SessionResultDto,
+  TeamBagDto,
   TeamDto,
 } from './types';
 
@@ -72,6 +73,9 @@ export const finishSession = (sessionId: string, exitedEarly: boolean) =>
 
 export const fetchBagWall = (role: string) =>
   request<BagWallDto>(`/api/roster/teams/${role}/members`);
+
+export const fetchTeamBag = (role: string) =>
+  request<TeamBagDto>(`/api/roster/teams/${role}/bag`);
 
 export const updateBagStyle = (memberId: string, colour: string, style: string) =>
   request<void>(`/api/roster/members/${memberId}/bag`, {

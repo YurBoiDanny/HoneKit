@@ -35,6 +35,63 @@ public static class RosterEndpoints
             return TypedResults.Ok(new TeamDto(normalizedRole, TeamName(normalizedRole), members));
         });
 
+        // The leader's read: one tool per role skill, filled by the crew's completed lessons over
+        // (members × lessons). Read-only, derived on read, and wear is the crew's, not a score.
+        api.MapGet("/teams/{role}/bag", async Task<Results<Ok<TeamBagDto>, ProblemHttpResult>> (
+            string role,
+            RosterDbContext db,
+            ProgressClient progressClient,
+            ContentClient contentClient,
+            ILoggerFactory loggerFactory,
+            CancellationToken ct) =>
+        {
+            var normalizedRole = role.Trim().ToLowerInvariant();
+
+            var members = await db.Members.AsNoTracking()
+                .Where(m => m.PrimaryRole == normalizedRole || m.SecondaryRole == normalizedRole)
+                .OrderBy(m => m.Name)
+                .ToListAsync(ct);
+
+            var logger = loggerFactory.CreateLogger("Roster.TeamBag");
+
+            SkillDto[] skills;
+            LessonDto[] lessons;
+            try
+            {
+                skills = await contentClient.GetSkillsAsync(normalizedRole, ct);
+                lessons = await contentClient.GetLessonsAsync(normalizedRole, ct);
+            }
+            catch (Exception exception)
+            {
+                return Unavailable("Content", exception, logger);
+            }
+
+            // Sequential on purpose: one DbContext per request, and a clear failure per member.
+            var completions = new List<IReadOnlyCollection<string>>(members.Count);
+
+            foreach (var member in members)
+            {
+                try
+                {
+                    completions.Add((await progressClient.GetCompletionsAsync(member.Id, ct)).LessonIds);
+                }
+                catch (Exception exception)
+                {
+                    return Unavailable("Progress", exception, logger);
+                }
+            }
+
+            var tools = TeamBagRules.Tools(completions, lessons, skills, members.Count);
+            var wear = TeamBagRules.Wear(members.Select(member => member.Worn));
+
+            return TypedResults.Ok(new TeamBagDto(
+                normalizedRole,
+                TeamName(normalizedRole),
+                members.Count,
+                tools,
+                wear));
+        });
+
         // The bag wall: every member of the role with the tools their completions earn. Skills and
         // lessons are fetched once for the role, then each member's completions are joined locally.
         api.MapGet("/teams/{role}/members", async Task<Results<Ok<BagWallDto>, ProblemHttpResult>> (

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BagArt } from '../components/BagArt';
@@ -11,15 +11,12 @@ import {
   fetchTeam,
   updateBagStyle,
 } from '../api/client';
-import type { BagDto, EarnedToolDto, MemberDto } from '../api/types';
-import { quietFor } from '../lib/member';
+import type { BagDto, EarnedToolDto } from '../api/types';
+import { BagSwitch } from '../components/BagSwitch';
+import { CrewRail } from '../components/CrewRail';
 
 const colours = ['sage', 'rose', 'powder', 'butter', 'brass', 'teal'] as const;
 const styles = ['backpack', 'duffel', 'sling'] as const;
-
-function memberStyle(member: MemberDto): CSSProperties {
-  return { '--member-colour': `var(--${member.colour})` } as CSSProperties;
-}
 
 function toolLabel(tool: EarnedToolDto): string {
   return tool.honed ? `${tool.name} (honed)` : tool.name;
@@ -76,6 +73,8 @@ export function BagScreen() {
 
   return (
     <>
+      <BagSwitch />
+
       <section className="intro">
         <h1>Your bag</h1>
         <p className="lede">
@@ -182,54 +181,12 @@ export function BagScreen() {
           )}
         </section>
 
-        <aside className="crew" aria-labelledby="crew-heading">
-          <h2 id="crew-heading">The camera crew</h2>
-          <p className="crew-sub">Everyone who serves on camera, primary or second role.</p>
-
-          {team.isPending ? (
-            <p className="quiet-load">Loading the crew…</p>
-          ) : team.isError ? (
-            <div role="alert">
-              <p className="quiet-load">The crew list is unavailable right now.</p>
-              <button type="button" onClick={() => team.refetch()} className="text-button">
-                Try again
-              </button>
-            </div>
-          ) : (
-            <ul className="crew-list">
-              {team.data.members.map((member) => {
-                const isYou = member.id === DEMO_MEMBER_ID;
-                const note = isYou ? 'you' : quietFor(member);
-
-                return (
-                  <li key={member.id}>
-                    <Link
-                      className={[
-                        'crew-member',
-                        isYou ? 'crew-member--you' : '',
-                        member.worn ? 'crew-member--worn' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')}
-                      style={memberStyle(member)}
-                      to={isYou ? '/' : `/crew/${member.id}`}
-                    >
-                      <span className="swatch" aria-hidden="true" />
-                      <span className="name">{member.name}</span>
-                      <span className="note">{note}</span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-
-          {!team.isPending && !team.isError && (
-            <Link className="text-link crew-wall-link" to="/crew">
-              See every bag on the wall
-            </Link>
-          )}
-        </aside>
+        <CrewRail
+          members={team.data?.members}
+          isPending={team.isPending}
+          isError={team.isError}
+          onRetry={() => team.refetch()}
+        />
       </div>
     </>
   );

@@ -143,7 +143,7 @@ export function DeckScreen() {
         <div className="state state--error" role="alert">
           <h1>The deck stopped.</h1>
           <p>{error ?? 'The deck could not be loaded. It may still be starting.'}</p>
-          <Link className="button-primary" to="/">
+          <Link className="button-primary" to="/me">
             Back to your bag
           </Link>
         </div>
@@ -171,7 +171,7 @@ export function DeckScreen() {
           ) : (
             <p>Nothing was completed this time. The deck is waiting when you are.</p>
           )}
-          <Link className="button-primary" to="/">
+          <Link className="button-primary" to="/me">
             Back to your bag
           </Link>
         </div>
@@ -207,7 +207,7 @@ export function DeckScreen() {
   return (
     <section className="deck-screen">
       <div className="deck-bar">
-        <Link className="text-link" to="/">
+        <Link className="text-link" to="/me">
           Back to your bag
         </Link>
         <button

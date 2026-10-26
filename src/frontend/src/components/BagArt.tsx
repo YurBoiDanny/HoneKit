@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import type { EarnedToolDto } from '../api/types';
 
 type BagArtProps = {
@@ -6,13 +7,23 @@ type BagArtProps = {
   label: string;
   tools: EarnedToolDto[];
   droppingSkillId?: string | null;
+  /** Team-bag mode: percent filled per skill, drawn as a gauge in the patch socket. */
+  fills?: Record<string, number>;
 };
 
 /**
  * The bag, drawn as layered SVG so a colour change is a token change.
  * Empty bag for the walking skeleton; tools and patches land in later slices.
  */
-export function BagArt({ colour, worn = false, label, tools, droppingSkillId = null }: BagArtProps) {
+export function BagArt({
+  colour,
+  worn = false,
+  label,
+  tools,
+  droppingSkillId = null,
+  fills,
+}: BagArtProps) {
+  const clipPrefix = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   return (
     <svg
       className={`bag-art bag--${colour}${worn ? ' bag-art--worn' : ''}`}
@@ -92,6 +103,62 @@ export function BagArt({ colour, worn = false, label, tools, droppingSkillId = n
         const y = index < 2 ? 356 : 414;
         const tool = tools[index];
         const tilt = index % 2 === 0 ? -1.5 : 1.5;
+        const fill = tool ? fills?.[tool.skillId] : undefined;
+
+        if (tool && fill !== undefined) {
+          const percent = Math.max(0, Math.min(100, fill));
+
+          return (
+            <g key={tool.skillId} transform={`rotate(${tilt} ${x + 34} ${y + 23})`}>
+              <rect
+                x={x}
+                y={y}
+                width="68"
+                height="46"
+                rx="8"
+                fill="var(--paper-raised)"
+                stroke="var(--ink)"
+                strokeOpacity="0.35"
+                strokeWidth="2"
+              />
+              <clipPath id={`${clipPrefix}-${index}`}>
+                <rect x={x} y={y} width="68" height="46" rx="8" />
+              </clipPath>
+              <g clipPath={`url(#${clipPrefix}-${index})`}>
+                <rect
+                  x={x}
+                  y={y + 14 + 32 * (1 - percent / 100)}
+                  width="68"
+                  height={32 * (percent / 100)}
+                  fill="var(--brass)"
+                />
+              </g>
+              <rect x={x} y={y} width="68" height="14" fill="var(--paper-raised)" opacity="0.96" />
+              <rect
+                x={x + 5}
+                y={y + 5}
+                width="58"
+                height="36"
+                rx="5"
+                fill="none"
+                stroke="var(--ink)"
+                strokeOpacity="0.3"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
+              />
+              <text
+                x={x + 34}
+                y={y + 10.5}
+                textAnchor="middle"
+                fontFamily="Inter, sans-serif"
+                fontSize="9.5"
+                fill="var(--ink)"
+              >
+                {tool.name}
+              </text>
+            </g>
+          );
+        }
 
         return tool ? (
           <g key={tool.skillId} transform={`rotate(${tilt} ${x + 34} ${y + 23})`}>

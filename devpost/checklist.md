@@ -59,7 +59,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Change your bag, then open a teammate's. Does yours feel like yours, and does Elena's worn bag read as "gone quiet" rather than "bad at the job"?
   Commit: `Personalize bags and open a teammate's`
 
-- [ ] **6. The team bag, and the leader's home**
+- [x] **6. The team bag, and the leader's home**
   Becomes usable: The app now lands as the lead on the Camera team bag — one big bag whose four tools fill in proportion to the crew's completed lessons, about half full, with a plainer list on click. The roster sits below it; opening the bag unzips to the bag wall; a nav switch moves between the team bag and your own.
   Why now: The leader side needs the aggregate read, which is real math over the same progress data. Putting it after the member loop means the numbers it shows are numbers the loop already produces, and the landing page finally matches the core journey.
   PRD ref: `prd.md > The leader's view` (team bag, wear, roster, read-only, the switch), `prd.md > The Core Journey` (steps 1–4)
