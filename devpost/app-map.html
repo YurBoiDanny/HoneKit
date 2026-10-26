@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>HoneKit — app map</title>
+<style>
+  :root {
+    --paper: #f7f1e4;
+    --paper-raised: #fdf8ed;
+    --ink: #2f2822;
+    --ink-soft: #5f5448;
+    --ink-faint: #6e6255;
+    --edge: #e3d6bf;
+    --sage: #8fa579;
+    --brass: #b0842f;
+    --teal: #1e5a4d;
+    --rose: #d8a09a;
+    --serif: Georgia, 'Iowan Old Style', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans); }
+  main { max-width: 880px; margin: 0 auto; padding: 32px 22px 72px; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: -0.02em; }
+  h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); line-height: 1; margin: 6px 0 10px; }
+  h2 { margin: 42px 0 10px; font-size: 1.5rem; border-top: 1.5px solid var(--ink); padding-top: 14px; }
+  h3 { margin: 18px 0 6px; font-size: 1.1rem; }
+  p { margin: 0 0 10px; max-width: 68ch; }
+  .eyebrow { color: var(--ink-faint); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .lede { color: var(--ink-soft); font-size: 1.08rem; max-width: 60ch; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.86em; }
+  code { background: var(--paper-raised); padding: 1px 5px; border-radius: 4px; }
+  pre { background: var(--paper-raised); border: 1px solid var(--edge); border-radius: 8px; padding: 12px; overflow: auto; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 6px 0; }
+  .pieces { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 14px 0 20px; }
+  .piece { background: var(--paper-raised); border: 1px solid var(--edge); border-radius: 8px; padding: 10px 12px; }
+  .piece strong { display: block; font-family: var(--serif); font-size: 1.05rem; }
+  .piece span { color: var(--ink-faint); font-size: 0.86rem; }
+  .diagram { margin: 18px 0 8px; overflow-x: auto; }
+  .route li { margin: 12px 0; }
+  .route code { font-size: 0.82rem; word-break: break-word; }
+  .note { border-left: 3px solid var(--brass); padding: 4px 0 4px 12px; color: var(--ink-soft); }
+  .practice { background: var(--paper-raised); border: 1px solid var(--edge); border-radius: 10px; padding: 14px 16px; }
+  details { margin: 12px 0; }
+  summary { cursor: pointer; min-height: 32px; color: var(--ink-soft); }
+  .footer { margin-top: 40px; color: var(--ink-faint); font-size: 0.82rem; }
+  a { color: var(--teal); }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">HoneKit · app map · snapshot 82da9b3</p>
+    <h1>HoneKit</h1>
+    <p class="lede">A flashcard app for the camera crew where what you prove becomes tools and patches in a bag you carry. Five small services, one React app, one deployment model.</p>
+  </header>
+
+  <section>
+    <h2>The shape</h2>
+    <div class="pieces">
+      <div class="piece"><strong>Content</strong><span>skills, lessons, decks, cards, authored targets</span></div>
+      <div class="piece"><strong>Progress</strong><span>sessions, grading, requeues, completions</span></div>
+      <div class="piece"><strong>Roster &amp; Bags</strong><span>people, bags, the wall, derived tools</span></div>
+      <div class="piece"><strong>Requirements</strong><span>PDF/text → model → editable requirements</span></div>
+      <div class="piece"><strong>Recommendations</strong><span>deterministic rosters, gaps, saved plans</span></div>
+      <div class="piece"><strong>Frontend</strong><span>React + Vite in dev, nginx when deployed</span></div>
+    </div>
+
+    <div class="diagram" role="img" aria-label="One answer travels from the card player to Progress, then Roster derives the tool, then the bag shows a patch.">
+      <svg viewBox="0 0 760 150" width="100%" height="150">
+        <defs>
+          <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0 0 L10 5 L0 10 z" fill="#5f5448" />
+          </marker>
+        </defs>
+        <rect x="8" y="36" width="160" height="72" rx="10" fill="#fdf8ed" stroke="#e3d6bf" />
+        <text x="88" y="66" text-anchor="middle" font-family="Georgia" font-size="15" fill="#2f2822">Card player</text>
+        <text x="88" y="86" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#6e6255">your frame</text>
+
+        <rect x="204" y="36" width="160" height="72" rx="10" fill="#fdf8ed" stroke="#e3d6bf" />
+        <text x="284" y="66" text-anchor="middle" font-family="Georgia" font-size="15" fill="#2f2822">Progress</text>
+        <text x="284" y="86" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#6e6255">overlap ≥ 0.70</text>
+
+        <rect x="400" y="36" width="160" height="72" rx="10" fill="#fdf8ed" stroke="#e3d6bf" />
+        <text x="480" y="66" text-anchor="middle" font-family="Georgia" font-size="15" fill="#2f2822">Roster &amp; Bags</text>
+        <text x="480" y="86" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#6e6255">derive the tool</text>
+
+        <rect x="596" y="36" width="156" height="72" rx="10" fill="#e9e2cf" stroke="#b0842f" />
+        <text x="674" y="66" text-anchor="middle" font-family="Georgia" font-size="15" fill="#2f2822">The bag</text>
+        <text x="674" y="86" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#5f5448">patch lands</text>
+
+        <line x1="170" y1="72" x2="200" y2="72" stroke="#5f5448" stroke-width="2" marker-end="url(#a)" />
+        <line x1="366" y1="72" x2="396" y2="72" stroke="#5f5448" stroke-width="2" marker-end="url(#a)" />
+        <line x1="562" y1="72" x2="592" y2="72" stroke="#5f5448" stroke-width="2" marker-end="url(#a)" />
+      </svg>
+    </div>
+    <p class="note">The tool is never stored: Roster computes it from Progress completions every time the bag is read.</p>
+  </section>
+
+  <section>
+    <h2>Follow one action</h2>
+    <p>Answer a framing card and watch the tool arrive. Three stops, real symbols.</p>
+    <ol class="route">
+      <li>
+        <strong>Where you answer.</strong> <code>src/frontend/src/screens/DeckScreen.tsx</code> — <code>answerWith</code> posts the attempt; <code>advance</code> asks Progress for the next card. The canvas itself is <code>src/frontend/src/components/FramingCard.tsx</code> and <code>FramingCanvas.tsx</code> (normalised 0–1 rectangle).
+      </li>
+      <li>
+        <strong>Where it is judged.</strong> <code>src/services/Progress/Endpoints/ProgressEndpoints.cs</code> — <code>MapPost(&quot;/sessions/{id}/attempts&quot;…)</code> calls <code>Domain/FramingRules.cs</code> (IoU ≥ 0.70) or <code>Domain/SequenceRules.cs</code> (ordering/PTZ), records the attempt and the requeue. On finish, <code>ProgressDomain.Evaluate</code> computes first-try, pass and honed.
+      </li>
+      <li>
+        <strong>Where it becomes gear.</strong> <code>src/services/Roster/Endpoints/RosterEndpoints.cs</code> — <code>MapGet(&quot;/members/{id}/bag&quot;…)</code> joins completions to Content lessons through <code>Domain/BagRules.cs</code>; <code>src/frontend/src/components/BagArt.tsx</code> draws the patch, with a drop class until the acknowledgement is posted.
+      </li>
+    </ol>
+    <details>
+      <summary>A second route: the brief becomes a roster</summary>
+      <ol class="route">
+        <li><code>src/services/Requirements/Parsing/RequirementParser.cs</code> — text/PDF → <code>IChatClient</code> → validated set; <code>Endpoints/RequirementEndpoints.cs</code> stores it before you edit.</li>
+        <li><code>src/services/Recommendations/Domain/RecommendationRules.cs</code> — deterministic ordering, gaps, sustain; <code>Endpoints/RecommendationEndpoints.cs</code> saves plans.</li>
+        <li><code>src/frontend/src/components/Recommendations.tsx</code> — strategy switch, hand-pick warnings, gap assignment.</li>
+      </ol>
+    </details>
+  </section>
+
+  <section>
+    <h2>To change this, start here</h2>
+    <ul>
+      <li><strong>A new card type:</strong> <code>Content/Data/ContentSeed.cs</code> and <code>CardDto</code> → grading in <code>Progress/Domain</code> + <code>ProgressEndpoints</code> → a branch in <code>DeckScreen.tsx</code> → the authoring form in <code>BuildScreen.tsx</code>.</li>
+      <li><strong>The AI reader:</strong> non-secrete defaults live in <code>src/HoneKit.AppHost/appsettings.json</code> under <code>Parameters</code>; the client, timeout and prompt live in <code>RequirementParser.cs</code>; the status sentence is <code>Domain/AiStatusRules.cs</code>.</li>
+      <li><strong>A skill or its spread:</strong> <code>ContentSeed.cs</code> (skills/lessons/cards) and <code>ProgressSeed.cs</code> (who completed what), then <code>dotnet test HoneKit.slnx</code>.</li>
+      <li><strong>The bag's look:</strong> <code>src/frontend/src/components/BagArt.tsx</code> for the drawing and patch labels; <code>tokens.css</code> for colour; <code>BagScreen.tsx</code>/<code>TeamBagScreen.tsx</code> for layout.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>A practice to reuse</h2>
+    <div class="practice">
+      <p><strong>Test the dependency before the app, and measure the boundary — not just the happy path.</strong></p>
+      <p>The live reader failed twice for different reasons. A direct <code>curl</code> to OpenCode Go returned <code>400 MissingSessionID</code>; the app was hiding that behind “the reader did not answer”, so the fix was to send <code>x-opencode-session</code> (<code>73a5be6</code>). The second failure was ours: a 30-second timeout, while the same brief took 19.8 s and 28.1 s. One warm success proved nothing about the boundary; timing two runs exposed it, and the budget became 90 s (<code>653b05e</code>).</p>
+      <p>Next time an integration misbehaves, reproduce it against the provider with the smallest possible request, read the provider's exact error, then time the real payload. That distinguishes “the provider is down” from “our wrapper is wrong” from “our deadline is too tight”.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Run it</h2>
+    <pre>aspire run                 # dev: services + Vite + dashboard
+aspire deploy -o aspire-output   # the demo shape at localhost:8080
+
+dotnet test HoneKit.slnx
+cd src/frontend &amp;&amp; npm test &amp;&amp; npm run build</pre>
+    <p class="footer">Snapshot of commit <code>82da9b3</code> (26 Oct 2026). The map describes the tree at that commit and can drift; re-check paths before relying on it. No learner profile data or credentials are included.</p>
+  </section>
+</main>
+</body>
+</html>

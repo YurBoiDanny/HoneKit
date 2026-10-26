@@ -152,20 +152,20 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
 ## Hands-on Checkpoints
 
 - [x] Early usable behavior explored — after slice 3, the tool drop: bag art, motion and the rest of the member loop can still be shaped by feedback
-- [ ] Final kick-the-tires exploration and feedback completed — after slice 10, the full journey on the deployed stack
+- [x] Final kick-the-tires exploration and feedback completed — after slice 10, the full journey on the deployed stack (learner confirmed, 26 Oct; bag hub removed, live reader and draft deletion exercised)
 
 ## Final Review
 
 - [x] Delete unconfirmed requirement drafts from the Meeting plan; confirmed sets are locked (409) — learner feedback, 26 Oct
 - [x] Revert the bag's animated opening and tool-filled hole; wrap long patch labels and make the chosen bag style visibly change the drawing — learner review, 26 Oct
 - [x] Add OpenCode Go as a first-class reader provider, with the Go endpoint and model documented — live call still waits on the learner's key
-- [ ] Final review complete — feedback resolved and learner confirms ready to ship
+- [x] Final review complete — feedback resolved and learner confirms ready to ship
 
 ## Code Tour and App Map
 
-- [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
-- [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] Learning activity complete — focused alternative (dependency-first debugging, see evidence)
+- [x] Optional edit and transfer reflection addressed — offered; optional answer, not required to proceed
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
 Activity and evidence:
 Route and stops:
