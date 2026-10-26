@@ -17,6 +17,8 @@ public sealed class ContentClient(HttpClient http)
 {
     public const string FillInTheBlank = "fill-in-the-blank";
 
+    public const string Framing = "framing";
+
     /// <summary>The deck, or null when Content does not know it.</summary>
     public async Task<DeckPayload?> GetDeckAsync(string deckId, CancellationToken cancellationToken)
     {
@@ -33,6 +35,24 @@ public sealed class ContentClient(HttpClient http)
 
         return await response.Content.ReadFromJsonAsync<DeckPayload>(cancellationToken)
             ?? throw new InvalidOperationException("Content returned an empty deck payload.");
+    }
+
+    /// <summary>The card itself, or null when Content does not know it.</summary>
+    public async Task<CardDto?> GetCardAsync(string cardId, CancellationToken cancellationToken)
+    {
+        using var response = await http.GetAsync(
+            $"/api/cards/{Uri.EscapeDataString(cardId)}",
+            cancellationToken);
+
+        if (response.StatusCode == HttpStatusCode.NotFound)
+        {
+            return null;
+        }
+
+        response.EnsureSuccessStatusCode();
+
+        return await response.Content.ReadFromJsonAsync<CardDto>(cancellationToken)
+            ?? throw new InvalidOperationException("Content returned an empty card payload.");
     }
 
     /// <summary>The grading payload for one card, or null when Content does not know it.</summary>

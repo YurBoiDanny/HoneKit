@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
     "gen:contracts": "dotnet run --project ../../tools/HoneKit.ContractGen -- src/api/types.ts",
     "check:contracts": "dotnet run --project ../../tools/HoneKit.ContractGen -- --check src/api/types.ts"
   },
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.0",
     "typescript": "^5.9.0",
-    "vite": "^7.1.0"
+    "vite": "^7.1.0",
+    "vitest": "^5.0.5"
   }
 }

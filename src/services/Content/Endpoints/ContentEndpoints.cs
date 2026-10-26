@@ -106,7 +106,8 @@ public static class ContentEndpoints
                 card.Id,
                 card.CorrectChoiceId,
                 card.Explanation,
-                ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>())));
+                ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>()),
+                ContentJson.Read<RectDto?>(card.TargetRectJson, null)));
         });
 
         return app;

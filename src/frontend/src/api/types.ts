@@ -11,6 +11,7 @@ export interface AttemptResultDto {
   requeuedAfter: number | null;
   dueAt: string;
   remaining: number;
+  overlap: number | null;
 }
 
 export interface BagDto {
@@ -28,6 +29,7 @@ export interface CardAnswerDto {
   correctChoiceId: string | null;
   explanation: string;
   wrongReasons: Record<string, string>;
+  targetRect: RectDto | null;
 }
 
 export interface CardDto {

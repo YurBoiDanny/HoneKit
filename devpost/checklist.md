@@ -39,7 +39,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Finish a deck, go home, and watch the tool land. Is that the beat? Tell me what you'd change about where and how it arrives.
   Commit: `Drop earned tools into the bag`
 
-- [ ] **4. Framing scenarios**
+- [x] **4. Framing scenarios**
   Becomes usable: A framing card shows a stage photograph and a draggable, resizable frame. Position the crop for "leader teaching at the lectern" and submit; a miss draws the author's target frame over yours with the explanation, and the card comes back. The seeded deck now mixes both card types.
   Why now: It is the second card type and the only pointer-heavy interaction, so it carries the most UI risk. It arrives after the loop works, so a canvas problem can't hold the whole member journey hostage.
   PRD ref: `prd.md > The member loop` (framing scenario, target frame on a miss), `prd.md > Screens and Layout` (responsive framing canvas)
@@ -111,7 +111,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
 
 ## Hands-on Checkpoints
 
-- [ ] Early usable behavior explored — after slice 3, the tool drop: bag art, motion and the rest of the member loop can still be shaped by feedback
+- [x] Early usable behavior explored — after slice 3, the tool drop: bag art, motion and the rest of the member loop can still be shaped by feedback
 - [ ] Final kick-the-tires exploration and feedback completed — after slice 10, the full journey on the deployed stack
 
 ## Final Review

@@ -12,6 +12,7 @@ import {
   submitAttempt,
 } from '../api/client';
 import type { AttemptResultDto, SessionDto, SessionResultDto } from '../api/types';
+import { FramingCard } from '../components/FramingCard';
 
 type Phase = 'starting' | 'playing' | 'result' | 'error';
 
@@ -107,15 +108,15 @@ export function DeckScreen() {
     }
   }
 
-  async function answer(choiceId: string) {
+  async function answerWith(rawAnswer: string) {
     if (!session || !card || feedback) {
       return;
     }
 
-    setSelected(choiceId);
+    setSelected(card.choices.some((choice) => choice.id === rawAnswer) ? rawAnswer : null);
 
     try {
-      const attempt = await submitAttempt(session.id, card.id, choiceId);
+      const attempt = await submitAttempt(session.id, card.id, rawAnswer);
       setFeedback(attempt);
       if (attempt.correct) {
         setNudge((value) => value + 1);
@@ -201,6 +202,7 @@ export function DeckScreen() {
         ? (correctLabel ?? '')
         : ''
     : '';
+  const isFraming = card.type === 'framing';
 
   return (
     <section className="deck-screen">
@@ -235,12 +237,15 @@ export function DeckScreen() {
       )}
 
       <article className="card" aria-labelledby="card-prompt">
-        <div className="card-media">
-          {card.imageRef && <img src={card.imageRef} alt="" />}
-          <span key={nudge} className={`nudge${nudge > 0 ? ' nudge--play' : ''}`} aria-hidden="true">
-            <CarabinerIcon />
-          </span>
-        </div>
+        <span key={nudge} className={`nudge${nudge > 0 ? ' nudge--play' : ''}`} aria-hidden="true">
+          <CarabinerIcon />
+        </span>
+
+        {!isFraming && (
+          <div className="card-media">
+            {card.imageRef && <img src={card.imageRef} alt="" />}
+          </div>
+        )}
 
         <div className="card-body">
           <p className="card-count">
@@ -258,62 +263,55 @@ export function DeckScreen() {
             )}
           </h1>
 
-          <div className="choices">
-            {card.choices.map((choice) => {
-              const isSelected = choice.id === selected;
-              const isCorrect = feedback?.correctChoiceId === choice.id;
-              const state = feedback
-                ? isCorrect
-                  ? 'is-right'
+          {isFraming ? (
+            <FramingCard
+              key={card.id}
+              card={card}
+              feedback={feedback}
+              showAnswer={showAnswer}
+              onSubmit={(value) => void answerWith(value)}
+            />
+          ) : (
+            <div className="choices">
+              {card.choices.map((choice) => {
+                const isSelected = choice.id === selected;
+                const isCorrect = feedback?.correctChoiceId === choice.id;
+                const state = feedback
+                  ? isCorrect
+                    ? 'is-right'
+                    : isSelected
+                      ? 'is-wrong'
+                      : ''
                   : isSelected
-                    ? 'is-wrong'
-                    : ''
-                : isSelected
-                  ? 'is-picked'
-                  : '';
+                    ? 'is-picked'
+                    : '';
 
-              return (
-                <button
-                  key={choice.id}
-                  type="button"
-                  className={`choice ${state}`.trim()}
-                  disabled={feedback !== null}
-                  aria-pressed={isSelected}
-                  onClick={() => void answer(choice.id)}
-                >
-                  <span>{choice.label}</span>
-                  {feedback && isCorrect && <small className="choice-tag">right answer</small>}
-                  {feedback && isSelected && !isCorrect && <small className="choice-tag">your answer</small>}
-                </button>
-              );
-            })}
-          </div>
+                return (
+                  <button
+                    key={choice.id}
+                    type="button"
+                    className={`choice ${state}`.trim()}
+                    disabled={feedback !== null}
+                    aria-pressed={isSelected}
+                    onClick={() => void answerWith(choice.id)}
+                  >
+                    <span>{choice.label}</span>
+                    {feedback && isCorrect && <small className="choice-tag">right answer</small>}
+                    {feedback && isSelected && !isCorrect && <small className="choice-tag">your answer</small>}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {feedback && (
-            <div className={`feedback ${feedback.correct ? 'feedback--right' : 'feedback--wrong'}`} role="status">
-              <p className="feedback-verdict">{feedback.correct ? 'Right.' : 'Not quite — try again.'}</p>
-              {feedback.correct ? (
-                <p>{feedback.explanation}</p>
-              ) : showAnswer ? (
-                <>
-                  <p>
-                    <strong>{correctLabel}</strong> {feedback.explanation}
-                  </p>
-                  {feedback.wrongReason && (
-                    <p className="feedback-reason">
-                      You picked {pickedLabel}: {feedback.wrongReason}
-                    </p>
-                  )}
-                  <p className="feedback-return">This card comes back in a moment.</p>
-                </>
-              ) : (
-                <p className="feedback-return">This card comes back in a moment.</p>
-              )}
-
-              <button type="button" className="button-primary" onClick={() => void advance()}>
-                Next card
-              </button>
-            </div>
+            <Feedback
+              feedback={feedback}
+              correctLabel={correctLabel}
+              pickedLabel={pickedLabel}
+              showAnswer={showAnswer}
+              onNext={() => void advance()}
+            />
           )}
         </div>
       </article>
@@ -322,6 +320,52 @@ export function DeckScreen() {
         Leave the deck
       </button>
     </section>
+  );
+}
+
+type FeedbackProps = {
+  feedback: AttemptResultDto;
+  correctLabel?: string;
+  pickedLabel?: string;
+  showAnswer: boolean;
+  onNext: () => void;
+};
+
+function Feedback({ feedback, correctLabel, pickedLabel, showAnswer, onNext }: FeedbackProps) {
+  return (
+    <div className={`feedback ${feedback.correct ? 'feedback--right' : 'feedback--wrong'}`} role="status">
+      <p className="feedback-verdict">{feedback.correct ? 'Right.' : 'Not quite — try again.'}</p>
+
+      {feedback.correct ? (
+        <p>{feedback.explanation}</p>
+      ) : showAnswer ? (
+        <>
+          <p>
+            {correctLabel && <strong>{correctLabel} </strong>}
+            {feedback.explanation}
+          </p>
+          {feedback.wrongReason && (
+            <p className="feedback-reason">
+              You picked {pickedLabel}: {feedback.wrongReason}
+            </p>
+          )}
+          <p className="feedback-return">This card comes back in a moment.</p>
+        </>
+      ) : (
+        <p className="feedback-return">This card comes back in a moment.</p>
+      )}
+
+      {feedback.overlap != null && (
+        <p className="feedback-overlap">
+          {Math.round(feedback.overlap * 100)}% overlap.
+          {!feedback.correct && ' 70% counts as close enough.'}
+        </p>
+      )}
+
+      <button type="button" className="button-primary" onClick={onNext}>
+        Next card
+      </button>
+    </div>
   );
 }
 

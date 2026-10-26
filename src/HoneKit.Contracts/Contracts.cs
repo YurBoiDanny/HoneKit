@@ -73,7 +73,8 @@ public sealed record CardAnswerDto(
     string CardId,
     string? CorrectChoiceId,
     string Explanation,
-    IReadOnlyDictionary<string, string> WrongReasons);
+    IReadOnlyDictionary<string, string> WrongReasons,
+    RectDto? TargetRect = null);
 
 public sealed record AttemptResultDto(
     bool Correct,
@@ -82,7 +83,8 @@ public sealed record AttemptResultDto(
     string? WrongReason,
     int? RequeuedAfter,
     DateTimeOffset DueAt,
-    int Remaining);
+    int Remaining,
+    double? Overlap = null);
 
 public sealed record FinishSessionRequest(bool ExitedEarly);
 

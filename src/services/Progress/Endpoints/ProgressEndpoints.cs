@@ -71,7 +71,8 @@ public static class ProgressEndpoints
             return TypedResults.Ok(new HonedSkillsDto(id, skillIds));
         });
 
-        // Start the deck: only the card types this slice can grade join the queue, in deck order.
+        // Start the deck: every card joins the queue in deck order. Types that cannot be graded
+        // (there are none in the seeded deck) are rejected when the attempt arrives.
         api.MapPost("/sessions", async Task<Results<Created<SessionDto>, NotFound, ProblemHttpResult>> (
             StartSessionRequest request,
             ProgressDbContext db,
@@ -90,7 +91,6 @@ public static class ProgressEndpoints
             }
 
             var cardIds = deck?.Cards
-                .Where(card => string.Equals(card.Type, ContentClient.FillInTheBlank, StringComparison.Ordinal))
                 .Select(card => card.Id)
                 .ToArray() ?? [];
 
@@ -160,25 +160,66 @@ public static class ProgressEndpoints
                 return TypedResults.BadRequest("That card is not the next one in the queue.");
             }
 
+            CardDto? card;
             CardAnswerDto? answer;
             try
             {
-                answer = await content.GetCardAnswerAsync(request.CardId, ct);
+                card = await content.GetCardAsync(request.CardId, ct);
+                answer = card is null ? null : await content.GetCardAnswerAsync(request.CardId, ct);
             }
             catch (Exception exception)
             {
                 return ContentUnavailable(exception, loggerFactory);
             }
 
-            if (answer is null)
+            if (card is null || answer is null)
             {
                 return TypedResults.NotFound();
             }
 
-            // Slice 2 grades fill-in-the-blank by tapping a choice, so the answer is the choice id.
-            var submitted = request.Answer.Trim();
-            var correct = !string.IsNullOrEmpty(answer.CorrectChoiceId)
-                && string.Equals(submitted, answer.CorrectChoiceId, StringComparison.OrdinalIgnoreCase);
+            bool correct;
+            string? wrongReason = null;
+            double? overlap = null;
+
+            switch (card.Type)
+            {
+                case ContentClient.FillInTheBlank:
+                {
+                    // A tapped choice: the answer is the choice id.
+                    var submitted = request.Answer.Trim();
+                    correct = !string.IsNullOrEmpty(answer.CorrectChoiceId)
+                        && string.Equals(submitted, answer.CorrectChoiceId, StringComparison.OrdinalIgnoreCase);
+
+                    if (!correct && answer.WrongReasons.TryGetValue(submitted, out var reason))
+                    {
+                        wrongReason = reason;
+                    }
+
+                    break;
+                }
+
+                case ContentClient.Framing:
+                {
+                    // The answer is a JSON rectangle in normalised coordinates. Nothing is clamped:
+                    // a frame that is malformed or outside the image is a bad request, not a miss.
+                    if (!FramingRules.TryParseRect(request.Answer, out var submittedRect, out var parseError))
+                    {
+                        return TypedResults.BadRequest(parseError);
+                    }
+
+                    if (answer.TargetRect is null)
+                    {
+                        return TypedResults.BadRequest("This framing card has no target frame to grade against.");
+                    }
+
+                    overlap = FramingRules.Overlap(submittedRect!, answer.TargetRect);
+                    correct = FramingRules.IsCorrect(overlap.Value);
+                    break;
+                }
+
+                default:
+                    return TypedResults.BadRequest($"Cards of type '{card.Type}' cannot be answered here.");
+            }
 
             var firstTry = !await db.Attempts.AnyAsync(
                 a => a.SessionId == session.Id && a.CardId == request.CardId, ct);
@@ -223,13 +264,6 @@ public static class ProgressEndpoints
             session.QueueJson = ProgressJson.Write(remaining);
             await db.SaveChangesAsync(ct);
 
-            string? wrongReason = null;
-            if (!correct)
-            {
-                answer.WrongReasons.TryGetValue(submitted, out var reason);
-                wrongReason = reason;
-            }
-
             // The correct choice is returned on a miss too: the member's reveal setting lives in the
             // frontend, and it cannot show the answer without it. It is not a competitive score.
             return TypedResults.Ok(new AttemptResultDto(
@@ -239,7 +273,8 @@ public static class ProgressEndpoints
                 wrongReason,
                 requeuedAfter,
                 dueAt,
-                remaining.Count));
+                remaining.Count,
+                overlap));
         });
 
         api.MapPost("/sessions/{id}/finish", async Task<Results<Ok<SessionResultDto>, NotFound, ProblemHttpResult>> (
