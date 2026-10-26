@@ -15,14 +15,13 @@ var localTargetPlatform = RuntimeInformation.ProcessArchitecture == Architecture
 builder.AddDockerComposeEnvironment("compose");
 
 // The one place a model is called. The demo runs on the committed fixture; a live provider is a
-// configuration switch, forwarded to the Requirements container as-is.
-var isPublishMode = builder.ExecutionContext.IsPublishMode;
-// Configuration includes environment variables (AI__X -> AI:X) and, in Development,
-// the AppHost's user secrets. `aspire run` is the dev loop; `aspire deploy` is Production.
-var aiProvider = builder.Configuration["AI:PROVIDER"] ?? "fixture";
-var aiModel = builder.Configuration["AI:MODEL"] ?? "gpt-5-mini";
-var aiEndpoint = builder.Configuration["AI:ENDPOINT"] ?? "https://api.openai.com/v1";
-var aiApiKey = builder.Configuration["AI:APIKEY"] ?? "";
+// Aspire parameters are the configuration model: values come from Parameters__* environment
+// variables, the Parameters section (appsettings or user secrets), or a prompt. The key is
+// marked secret so deployments treat it as one.
+var aiProvider = builder.AddParameter("ai-provider");
+var aiModel = builder.AddParameter("ai-model");
+var aiEndpoint = builder.AddParameter("ai-endpoint");
+var aiApiKey = builder.AddParameter("ai-api-key", secret: true);
 
 // Aspire 13.6.4 exposes AddProject<T>() (project model V1); there is no AddDotnetProject() in this
 // package. The generated Projects.* metadata classes drive the typed overload for all five services.
@@ -55,9 +54,7 @@ var requirements = builder.AddProject<Projects.HoneKit_Requirements>("requiremen
     .WithEnvironment("AI__PROVIDER", aiProvider)
     .WithEnvironment("AI__MODEL", aiModel)
     .WithEnvironment("AI__ENDPOINT", aiEndpoint)
-    // Publish: leave a placeholder for Docker Compose to resolve, so a key never lands in the YAML.
-    // Run: hand the real key to the local Requirements process.
-    .WithEnvironment("AI__APIKEY", isPublishMode ? "${AI__APIKEY}" : aiApiKey);
+    .WithEnvironment("AI__APIKEY", aiApiKey);
 
 var recommendations = builder.AddProject<Projects.HoneKit_Recommendations>("recommendations", launchProfileName: "http")
     .WithVolume("recommendations-data", target: "/home/app", env: "DATA_DIR")
