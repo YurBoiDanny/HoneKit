@@ -1,6 +1,7 @@
 import type {
   AttemptResultDto,
   BagDto,
+  BagWallDto,
   CardDto,
   DeckSummaryDto,
   NextCardDto,
@@ -68,6 +69,15 @@ export const submitAttempt = (sessionId: string, cardId: string, answer: string)
 
 export const finishSession = (sessionId: string, exitedEarly: boolean) =>
   post<SessionResultDto>(`/api/progress/sessions/${sessionId}/finish`, { exitedEarly });
+
+export const fetchBagWall = (role: string) =>
+  request<BagWallDto>(`/api/roster/teams/${role}/members`);
+
+export const updateBagStyle = (memberId: string, colour: string, style: string) =>
+  request<void>(`/api/roster/members/${memberId}/bag`, {
+    method: 'PATCH',
+    body: JSON.stringify({ colour, style }),
+  });
 
 export const acknowledgeTool = (memberId: string, skillId: string) =>
   request<void>(`/api/roster/members/${memberId}/bag/acknowledge`, {

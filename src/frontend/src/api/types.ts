@@ -24,6 +24,22 @@ export interface BagDto {
   showAnswerOnWrong: boolean;
 }
 
+export interface BagWallDto {
+  role: string;
+  name: string;
+  members: BagWallMemberDto[];
+}
+
+export interface BagWallMemberDto {
+  id: string;
+  name: string;
+  colour: string;
+  style: string;
+  worn: boolean;
+  tools: string[];
+  lastActiveAt: string | null;
+}
+
 export interface CardAnswerDto {
   cardId: string;
   correctChoiceId: string | null;

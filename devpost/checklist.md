@@ -49,7 +49,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Open a framing card on a laptop and on a narrow window. Can you place the frame precisely with a mouse and with a trackpad, and does the miss show you what close enough looked like?
   Commit: `Add framing scenarios with IoU grading`
 
-- [ ] **5. Make the bag yours, and look at a teammate's**
+- [x] **5. Make the bag yours, and look at a teammate's**
   Becomes usable: Pick a bag colour and style (backpack, duffel, sling) and see it stick. Open any teammate's bag read-only and see their colours and kit — including Elena's visibly worn bag.
   Why now: The "show off" half of the kernel, and the first place personalization and the worn-bag seed can be judged on screen. It needs only the member bag that already exists, so it lands before the aggregate read.
   PRD ref: `prd.md > The bag` (personalization, teammates can see it), `prd.md > The leader's view` (bag wall, worn bag seeded)

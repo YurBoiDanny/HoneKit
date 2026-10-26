@@ -57,6 +57,19 @@ public sealed record HonedSkillsDto(string MemberId, IReadOnlyList<string> Skill
 
 public sealed record AcknowledgeRequest(string SkillId);
 
+public sealed record BagStyleRequest(string Colour, string Style);
+
+public sealed record BagWallMemberDto(
+    string Id,
+    string Name,
+    string Colour,
+    string Style,
+    bool Worn,
+    IReadOnlyList<string> Tools,
+    DateTimeOffset? LastActiveAt);
+
+public sealed record BagWallDto(string Role, string Name, IReadOnlyList<BagWallMemberDto> Members);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

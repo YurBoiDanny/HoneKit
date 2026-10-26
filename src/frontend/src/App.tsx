@@ -1,13 +1,16 @@
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { BagScreen } from './screens/BagScreen';
+import { CrewScreen } from './screens/CrewScreen';
 import { DeckScreen } from './screens/DeckScreen';
+import { TeammateBagScreen } from './screens/TeammateBagScreen';
 
 const laterNav = ['Deck building', 'Meeting plan', 'Settings', 'Profile'];
 const laterNavShort = ['Decks', 'Plan', 'Settings', 'Profile'];
 
 export default function App() {
   const { pathname } = useLocation();
-  const inBagFlow = pathname === '/' || pathname.startsWith('/deck');
+  const inBagFlow =
+    pathname === '/' || pathname.startsWith('/deck') || pathname.startsWith('/crew');
 
   return (
     <div className="page">
@@ -36,6 +39,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<BagScreen />} />
         <Route path="/deck/:deckId" element={<DeckScreen />} />
+        <Route path="/crew" element={<CrewScreen />} />
+        <Route path="/crew/:memberId" element={<TeammateBagScreen />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 

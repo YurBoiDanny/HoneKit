@@ -1,22 +1,21 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BagArt } from '../components/BagArt';
-import { acknowledgeTool, DEMO_MEMBER_ID, DEMO_ROLE, fetchBag, fetchDecks, fetchTeam } from '../api/client';
-import type { EarnedToolDto, MemberDto } from '../api/types';
+import {
+  acknowledgeTool,
+  DEMO_MEMBER_ID,
+  DEMO_ROLE,
+  fetchBag,
+  fetchDecks,
+  fetchTeam,
+  updateBagStyle,
+} from '../api/client';
+import type { BagDto, EarnedToolDto, MemberDto } from '../api/types';
+import { quietFor } from '../lib/member';
 
-function quietFor(member: MemberDto): string | null {
-  if (!member.worn) {
-    return null;
-  }
-
-  if (!member.lastActiveAt) {
-    return 'quiet for a while';
-  }
-
-  const days = Math.floor((Date.now() - new Date(member.lastActiveAt).getTime()) / 86_400_000);
-  return days >= 1 ? `quiet ${days} days` : 'quiet today';
-}
+const colours = ['sage', 'rose', 'powder', 'butter', 'brass', 'teal'] as const;
+const styles = ['backpack', 'duffel', 'sling'] as const;
 
 function memberStyle(member: MemberDto): CSSProperties {
   return { '--member-colour': `var(--${member.colour})` } as CSSProperties;
@@ -50,6 +49,30 @@ export function BagScreen() {
 
     return () => window.clearTimeout(timer);
   }, [dropping?.skillId, queryClient]);
+
+  const [savingStyle, setSavingStyle] = useState(false);
+
+  async function personalize(colour: string, style: string) {
+    if (!bag.data || savingStyle) {
+      return;
+    }
+
+    const previous = { colour: bag.data.colour, style: bag.data.style };
+    setSavingStyle(true);
+    queryClient.setQueryData<BagDto>(['bag', DEMO_MEMBER_ID], (old) =>
+      old ? { ...old, colour, style } : old,
+    );
+
+    try {
+      await updateBagStyle(DEMO_MEMBER_ID, colour, style);
+    } catch {
+      queryClient.setQueryData<BagDto>(['bag', DEMO_MEMBER_ID], (old) =>
+        old ? { ...old, ...previous } : old,
+      );
+    } finally {
+      setSavingStyle(false);
+    }
+  }
 
   return (
     <>
@@ -115,6 +138,45 @@ export function BagScreen() {
                     {tools.length === 0 ? `Start ${deck.name}` : `Run ${deck.name} again`}
                   </Link>
                 )}
+
+                <div className="personalise">
+                  <h2>Make it yours</h2>
+                  <p>Colour and style follow your bag into every view.</p>
+
+                  <div className="colour-row" role="group" aria-label="Bag colour">
+                    {colours.map((colour) => (
+                      <button
+                        key={colour}
+                        type="button"
+                        className={`colour-dot${bag.data.colour === colour ? ' is-on' : ''}`}
+                        style={{ background: `var(--${colour})` }}
+                        aria-label={colour.charAt(0).toUpperCase() + colour.slice(1)}
+                        aria-pressed={bag.data.colour === colour}
+                        onClick={() => void personalize(colour, bag.data.style)}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="style-row" role="group" aria-label="Bag style">
+                    {styles.map((style) => (
+                      <button
+                        key={style}
+                        type="button"
+                        className={`style-choice${bag.data.style === style ? ' is-on' : ''}`}
+                        aria-pressed={bag.data.style === style}
+                        onClick={() => void personalize(bag.data.colour, style)}
+                      >
+                        {style}
+                      </button>
+                    ))}
+                  </div>
+
+                  {savingStyle && (
+                    <p className="sr-only" role="status">
+                      Saving your bag.
+                    </p>
+                  )}
+                </div>
               </div>
             </>
           )}
@@ -140,24 +202,32 @@ export function BagScreen() {
                 const note = isYou ? 'you' : quietFor(member);
 
                 return (
-                  <li
-                    key={member.id}
-                    className={[
-                      'crew-member',
-                      isYou ? 'crew-member--you' : '',
-                      member.worn ? 'crew-member--worn' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')}
-                    style={memberStyle(member)}
-                  >
-                    <span className="swatch" aria-hidden="true" />
-                    <span className="name">{member.name}</span>
-                    <span className="note">{note}</span>
+                  <li key={member.id}>
+                    <Link
+                      className={[
+                        'crew-member',
+                        isYou ? 'crew-member--you' : '',
+                        member.worn ? 'crew-member--worn' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')}
+                      style={memberStyle(member)}
+                      to={isYou ? '/' : `/crew/${member.id}`}
+                    >
+                      <span className="swatch" aria-hidden="true" />
+                      <span className="name">{member.name}</span>
+                      <span className="note">{note}</span>
+                    </Link>
                   </li>
                 );
               })}
             </ul>
+          )}
+
+          {!team.isPending && !team.isError && (
+            <Link className="text-link crew-wall-link" to="/crew">
+              See every bag on the wall
+            </Link>
           )}
         </aside>
       </div>

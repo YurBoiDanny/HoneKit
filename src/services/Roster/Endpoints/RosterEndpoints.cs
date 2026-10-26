@@ -35,6 +35,76 @@ public static class RosterEndpoints
             return TypedResults.Ok(new TeamDto(normalizedRole, TeamName(normalizedRole), members));
         });
 
+        // The bag wall: every member of the role with the tools their completions earn. Skills and
+        // lessons are fetched once for the role, then each member's completions are joined locally.
+        api.MapGet("/teams/{role}/members", async Task<Results<Ok<BagWallDto>, ProblemHttpResult>> (
+            string role,
+            RosterDbContext db,
+            ProgressClient progressClient,
+            ContentClient contentClient,
+            ILoggerFactory loggerFactory,
+            CancellationToken ct) =>
+        {
+            var normalizedRole = role.Trim().ToLowerInvariant();
+
+            var members = await db.Members.AsNoTracking()
+                .Where(m => m.PrimaryRole == normalizedRole || m.SecondaryRole == normalizedRole)
+                .OrderBy(m => m.Name)
+                .ToListAsync(ct);
+
+            var logger = loggerFactory.CreateLogger("Roster.BagWall");
+
+            SkillDto[] skills;
+            LessonDto[] lessons;
+            try
+            {
+                skills = await contentClient.GetSkillsAsync(normalizedRole, ct);
+                lessons = await contentClient.GetLessonsAsync(normalizedRole, ct);
+            }
+            catch (Exception exception)
+            {
+                return Unavailable("Content", exception, logger);
+            }
+
+            var distinctSkills = skills.DistinctBy(skill => skill.Id).ToArray();
+            var distinctLessons = lessons.DistinctBy(lesson => lesson.Id).ToArray();
+
+            // DB access stays sequential (one context per request) and the Progress calls are made
+            // one member at a time: six small reads, and a failure names Progress cleanly.
+            var wall = new List<BagWallMemberDto>(members.Count);
+
+            foreach (var member in members)
+            {
+                CompletionsDto completions;
+                try
+                {
+                    completions = await progressClient.GetCompletionsAsync(member.Id, ct);
+                }
+                catch (Exception exception)
+                {
+                    return Unavailable("Progress", exception, logger);
+                }
+
+                var earnedSkillIds = BagRules.EarnedSkillIds(completions.LessonIds, distinctLessons, distinctSkills);
+
+                // Same mapping as the member bag, so the wall shows the tools in the same order.
+                var toolNames = BagRules.Tools(earnedSkillIds, distinctSkills, [], [])
+                    .Select(tool => tool.Name)
+                    .ToArray();
+
+                wall.Add(new BagWallMemberDto(
+                    member.Id,
+                    member.Name,
+                    member.Colour,
+                    member.Style,
+                    member.Worn,
+                    toolNames,
+                    member.LastActiveAt));
+            }
+
+            return TypedResults.Ok(new BagWallDto(normalizedRole, TeamName(normalizedRole), wall));
+        });
+
         api.MapGet("/members/{id}/bag", async Task<Results<Ok<BagDto>, NotFound, ProblemHttpResult>> (
             string id,
             RosterDbContext db,
@@ -125,6 +195,29 @@ public static class RosterEndpoints
                 member.ShowAnswerOnWrong));
         });
 
+        // No auth in the POC: the frontend only offers this for the demo member. The stored tokens
+        // are the closed vocabulary the UI draws from, so anything else is a bad request.
+        api.MapPatch("/members/{id}/bag", async Task<Results<NoContent, NotFound, BadRequest<string>>> (
+            string id, BagStyleRequest request, RosterDbContext db, CancellationToken ct) =>
+        {
+            var member = await db.Members.FirstOrDefaultAsync(m => m.Id == id, ct);
+            if (member is null)
+            {
+                return TypedResults.NotFound();
+            }
+
+            if (!BagStyleRules.TryValidate(request.Colour, request.Style, out var error))
+            {
+                return TypedResults.BadRequest(error);
+            }
+
+            member.Colour = request.Colour;
+            member.Style = request.Style;
+            await db.SaveChangesAsync(ct);
+
+            return TypedResults.NoContent();
+        });
+
         // Marks the drop as seen so the animation fires once. Idempotent: the client may retry.
         // The skill is not checked against earned tools; the client only acknowledges what it saw.
         api.MapPost("/members/{id}/bag/acknowledge", async Task<Results<NoContent, NotFound>> (
@@ -184,7 +277,7 @@ public static class RosterEndpoints
 
         return TypedResults.Problem(
             title: $"{service} is unavailable",
-            detail: $"The bag could not be built because the {service} service did not respond.",
+            detail: $"The bags could not be built because the {service} service did not respond.",
             statusCode: StatusCodes.Status503ServiceUnavailable,
             extensions: new Dictionary<string, object?> { ["service"] = service.ToLowerInvariant() });
     }
