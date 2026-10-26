@@ -11,6 +11,7 @@ import {
   parseBrief,
   updateRequirementSet,
 } from '../api/client';
+import { Recommendations } from '../components/Recommendations';
 import { RequirementEditor } from '../components/RequirementEditor';
 import type {
   ManualRequirementSetRequest,
@@ -247,6 +248,8 @@ export function PlanScreen() {
           )}
         </section>
       </div>
+
+      {mode === 'confirmed' && draft?.id && <Recommendations requirementId={draft.id} />}
     </section>
   );
 }

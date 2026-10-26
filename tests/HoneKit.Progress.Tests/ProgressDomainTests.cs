@@ -1,3 +1,4 @@
+using HoneKit.Contracts;
 using HoneKit.Progress.Domain;
 
 namespace HoneKit.Progress.Tests;
@@ -139,8 +140,7 @@ public sealed class ProgressDomainTests
     }
 
     [Fact]
-    public void A_plain_run_after_a_honed_one_keeps_the_skill_honed()
-    {
+    public void A_plain_run_after_a_honed_one_keeps_the_skill_honed()    {
         // The later plain session does not erase the earlier honed one, and a deck Content no
         // longer knows cannot invent a skill.
         (string DeckId, bool Honed)[] sessions =
@@ -164,5 +164,61 @@ public sealed class ProgressDomainTests
 
         Assert.Equal(now.AddDays(3), ProgressDomain.DueAt(correct: true, now));
         Assert.Equal(now.AddMinutes(10), ProgressDomain.DueAt(correct: false, now));
+    }
+
+    [Fact]
+    public void Skill_progress_counts_completed_lessons_and_the_latest_answer()
+    {
+        SkillDto[] skills =
+        [
+            new("framing", "camera", "Framing", 2),
+            new("gear", "camera", "Gear", 2)
+        ];
+
+        LessonDto[] lessons =
+        [
+            new("framing-1", "framing", 1, "Reading the frame"),
+            new("framing-2", "framing", 2, "Light and colour"),
+            new("gear-1", "gear", 1, "Build the camera"),
+            new("gear-2", "gear", 2, "Know the kit")
+        ];
+
+        var older = new DateTimeOffset(2026, 10, 20, 9, 0, 0, TimeSpan.Zero);
+        var newer = new DateTimeOffset(2026, 10, 24, 9, 0, 0, TimeSpan.Zero);
+
+        var progress = ProgressDomain.SkillProgress(
+            [("framing-1", older), ("framing-2", newer)],
+            skills,
+            lessons);
+
+        var framing = progress.Single(row => row.SkillId == "framing");
+        Assert.Equal(2, framing.CompletedLessons);
+        Assert.Equal(2, framing.TotalLessons);
+        Assert.Equal(100, framing.Percent);
+        Assert.Equal(newer, framing.LastAnsweredAt);
+
+        var gear = progress.Single(row => row.SkillId == "gear");
+        Assert.Equal(0, gear.CompletedLessons);
+        Assert.Equal(2, gear.TotalLessons);
+        Assert.Equal(0, gear.Percent);
+        Assert.Null(gear.LastAnsweredAt);
+    }
+
+    [Fact]
+    public void A_member_with_no_completions_reads_zero_everywhere()
+    {
+        SkillDto[] skills = [new("framing", "camera", "Framing", 2)];
+        LessonDto[] lessons =
+        [
+            new("framing-1", "framing", 1, "Reading the frame"),
+            new("framing-2", "framing", 2, "Light and colour")
+        ];
+
+        var progress = ProgressDomain.SkillProgress([], skills, lessons);
+
+        var framing = Assert.Single(progress);
+        Assert.Equal(0, framing.CompletedLessons);
+        Assert.Equal(0, framing.Percent);
+        Assert.Null(framing.LastAnsweredAt);
     }
 }

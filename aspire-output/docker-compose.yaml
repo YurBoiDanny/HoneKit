@@ -118,11 +118,38 @@ services:
       OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
       ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
       HTTP_PORTS: "${RECOMMENDATIONS_PORT}"
+      DATA_DIR: "/home/app"
+      REQUIREMENTS_HTTP: "http://requirements:${REQUIREMENTS_PORT}"
+      services__requirements__http__0: "http://requirements:${REQUIREMENTS_PORT}"
+      REQUIREMENTS_HTTPS: "https://requirements:${REQUIREMENTS_PORT}"
+      ROSTER_HTTP: "http://roster:${ROSTER_PORT}"
+      services__roster__http__0: "http://roster:${ROSTER_PORT}"
+      ROSTER_HTTPS: "https://roster:${ROSTER_PORT}"
+      PROGRESS_HTTP: "http://progress:${PROGRESS_PORT}"
+      services__progress__http__0: "http://progress:${PROGRESS_PORT}"
+      PROGRESS_HTTPS: "https://progress:${PROGRESS_PORT}"
+      CONTENT_HTTP: "http://content:${CONTENT_PORT}"
+      services__content__http__0: "http://content:${CONTENT_PORT}"
+      CONTENT_HTTPS: "https://content:${CONTENT_PORT}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://compose-dashboard:18889"
       OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
       OTEL_SERVICE_NAME: "recommendations"
     expose:
       - "${RECOMMENDATIONS_PORT}"
+    volumes:
+      - type: "volume"
+        target: "/home/app"
+        source: "recommendations-data"
+        read_only: false
+    depends_on:
+      requirements:
+        condition: "service_started"
+      roster:
+        condition: "service_started"
+      progress:
+        condition: "service_started"
+      content:
+        condition: "service_started"
     networks:
       - "aspire"
   frontend:
@@ -169,4 +196,6 @@ volumes:
   roster-data:
     driver: "local"
   requirements-data:
+    driver: "local"
+  recommendations-data:
     driver: "local"

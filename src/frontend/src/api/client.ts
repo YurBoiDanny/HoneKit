@@ -6,6 +6,10 @@ import type {
   DeckSummaryDto,
   NextCardDto,
   ParseFailureDto,
+  OverrideWarningDto,
+  PlanDto,
+  PlanSummaryDto,
+  RecommendationDto,
   RequirementSetDto,
   RequirementSummaryDto,
   SessionDto,
@@ -177,6 +181,25 @@ export async function parseBrief(file: File | null, text: string): Promise<Brief
     return { ok: false, failure: fallback };
   }
 }
+
+export const fetchRecommendations = (requirementId: string, strategy: string) =>
+  post<RecommendationDto>('/api/recommendations', { requirementId, strategy });
+
+export const checkOverrides = (requirementId: string, memberIds: string[]) =>
+  post<OverrideWarningDto[]>('/api/recommendations/check', { requirementId, memberIds });
+
+export const savePlan = (requirementId: string, strategy: string, memberIds: string[]) =>
+  post<PlanDto>('/api/plans', { requirementId, strategy, memberIds });
+
+export const fetchPlans = () => request<PlanSummaryDto[]>('/api/plans');
+
+export const fetchPlan = (id: string) => request<PlanDto>(`/api/plans/${id}`);
+
+export const assignDeck = (deckId: string, memberIds: string[]) =>
+  request<void>(`/api/content/decks/${deckId}/assign`, {
+    method: 'POST',
+    body: JSON.stringify({ memberIds }),
+  });
 
 export const setShowAnswerOnWrong = (memberId: string, showAnswerOnWrong: boolean) =>
   request<void>(`/api/roster/members/${memberId}/preferences`, {

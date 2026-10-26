@@ -93,8 +93,7 @@ public static class ContentEndpoints
         });
 
         // The grading payload. Only Progress calls this; the correct choice never rides on CardDto.
-        api.MapGet("/cards/{id}/answer", async Task<Results<Ok<CardAnswerDto>, NotFound>> (
-            string id, ContentDbContext db, CancellationToken ct) =>
+        api.MapGet("/cards/{id}/answer", async Task<Results<Ok<CardAnswerDto>, NotFound>> (            string id, ContentDbContext db, CancellationToken ct) =>
         {
             var card = await db.Cards.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id, ct);
             if (card is null)
@@ -108,6 +107,52 @@ public static class ContentEndpoints
                 card.Explanation,
                 ContentJson.Read<IReadOnlyDictionary<string, string>>(card.WrongReasonsJson, new Dictionary<string, string>()),
                 ContentJson.Read<RectDto?>(card.TargetRectJson, null)));
+        });
+
+        // Gaps become work: assign a deck to the members who are short. Idempotent per deck and
+        // member, so re-clicking the gap action adds nothing.
+        api.MapPost("/decks/{id}/assign", async Task<Results<NoContent, NotFound>> (
+            string id, AssignDeckRequest request, ContentDbContext db, CancellationToken ct) =>
+        {
+            var deckExists = await db.Decks.AsNoTracking().AnyAsync(deck => deck.Id == id, ct);
+            if (!deckExists)
+            {
+                return TypedResults.NotFound();
+            }
+
+            var memberIds = (request.MemberIds ?? [])
+                .Where(memberId => !string.IsNullOrWhiteSpace(memberId))
+                .Select(memberId => memberId.Trim())
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            if (memberIds.Length == 0)
+            {
+                return TypedResults.NoContent();
+            }
+
+            var alreadyAssigned = (await db.Assignments.AsNoTracking()
+                    .Where(assignment => assignment.DeckId == id && memberIds.Contains(assignment.MemberId))
+                    .Select(assignment => assignment.MemberId)
+                    .ToListAsync(ct))
+                .ToHashSet(StringComparer.Ordinal);
+
+            var now = DateTimeOffset.UtcNow;
+
+            foreach (var memberId in memberIds.Where(memberId => !alreadyAssigned.Contains(memberId)))
+            {
+                db.Assignments.Add(new Assignment
+                {
+                    Id = $"asg-{Guid.NewGuid():N}",
+                    DeckId = id,
+                    MemberId = memberId,
+                    AssignedAt = now
+                });
+            }
+
+            await db.SaveChangesAsync(ct);
+
+            return TypedResults.NoContent();
         });
 
         return app;

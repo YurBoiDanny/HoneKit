@@ -77,4 +77,9 @@ public sealed class ContentClient(HttpClient http)
         await http.GetFromJsonAsync<SkillDto[]>(
             $"/api/roles/{Uri.EscapeDataString(role)}/skills",
             cancellationToken) ?? [];
+
+    public async Task<LessonDto[]> GetLessonsAsync(string role, CancellationToken cancellationToken) =>
+        await http.GetFromJsonAsync<LessonDto[]>(
+            $"/api/roles/{Uri.EscapeDataString(role)}/lessons",
+            cancellationToken) ?? [];
 }

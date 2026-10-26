@@ -9,6 +9,9 @@ namespace HoneKit.Progress.Endpoints;
 
 public static class ProgressEndpoints
 {
+    // The POC has one role; progress is always reported against the camera catalogue.
+    private const string CameraRole = "camera";
+
     public static IEndpointRouteBuilder MapProgressEndpoints(this IEndpointRouteBuilder app)
     {
         var api = app.MapGroup("/api");
@@ -69,6 +72,40 @@ public static class ProgressEndpoints
                 skillIdByDeckId);
 
             return TypedResults.Ok(new HonedSkillsDto(id, skillIds));
+        });
+
+        // Per-skill progress for the role's catalogue. Progress does not own members, so an unknown
+        // id is simply a member with nothing done.
+        api.MapGet("/members/{id}/progress", async Task<Results<Ok<MemberProgressDto>, ProblemHttpResult>> (
+            string id,
+            ProgressDbContext db,
+            ContentClient content,
+            ILoggerFactory loggerFactory,
+            CancellationToken ct) =>
+        {
+            var completions = await db.LessonCompletions.AsNoTracking()
+                .Where(completion => completion.MemberId == id)
+                .Select(completion => new { completion.LessonId, completion.CompletedAt })
+                .ToListAsync(ct);
+
+            SkillDto[] skills;
+            LessonDto[] lessons;
+            try
+            {
+                skills = await content.GetSkillsAsync(CameraRole, ct);
+                lessons = await content.GetLessonsAsync(CameraRole, ct);
+            }
+            catch (Exception exception)
+            {
+                return ContentUnavailable(exception, loggerFactory);
+            }
+
+            var progress = ProgressDomain.SkillProgress(
+                completions.Select(completion => (completion.LessonId, completion.CompletedAt)),
+                skills,
+                lessons);
+
+            return TypedResults.Ok(new MemberProgressDto(id, progress));
         });
 
         // Start the deck: every card joins the queue in deck order. Types that cannot be graded

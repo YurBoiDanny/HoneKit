@@ -1,3 +1,5 @@
+using HoneKit.Contracts;
+
 namespace HoneKit.Progress.Domain;
 
 /// <summary>One graded answer, in the order the member gave it.</summary>
@@ -128,4 +130,56 @@ public static class ProgressDomain
 
     public static DateTimeOffset DueAt(bool correct, DateTimeOffset now) =>
         now.Add(correct ? CorrectInterval : WrongInterval);
+
+    /// <summary>
+    /// Per-skill progress over the role's catalogue: completed lessons over the skill's lesson
+    /// count, with the most recent completion as recency. Unknown members simply have no completions.
+    /// </summary>
+    public static IReadOnlyList<SkillProgressDto> SkillProgress(
+        IEnumerable<(string LessonId, DateTimeOffset CompletedAt)> completions,
+        IEnumerable<SkillDto> skills,
+        IEnumerable<LessonDto> lessons)
+    {
+        var completedAtByLesson = completions
+            .GroupBy(completion => completion.LessonId, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Max(completion => completion.CompletedAt),
+                StringComparer.Ordinal);
+
+        var lessonIdsBySkill = lessons
+            .DistinctBy(lesson => lesson.Id)
+            .GroupBy(lesson => lesson.SkillId, StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.Select(lesson => lesson.Id).ToArray(),
+                StringComparer.Ordinal);
+
+        return skills
+            .DistinctBy(skill => skill.Id)
+            .OrderBy(skill => skill.Name, StringComparer.Ordinal)
+            .ThenBy(skill => skill.Id, StringComparer.Ordinal)
+            .Select(skill =>
+            {
+                var lessonIds = lessonIdsBySkill.TryGetValue(skill.Id, out var known) ? known : [];
+                var completed = lessonIds.Where(completedAtByLesson.ContainsKey).ToArray();
+
+                var percent = skill.LessonCount <= 0
+                    ? 0
+                    : Math.Round(completed.Length * 100.0 / skill.LessonCount);
+
+                DateTimeOffset? lastAnsweredAt = completed.Length == 0
+                    ? null
+                    : completed.Max(lessonId => completedAtByLesson[lessonId]);
+
+                return new SkillProgressDto(
+                    skill.Id,
+                    skill.Name,
+                    completed.Length,
+                    skill.LessonCount,
+                    percent,
+                    lastAnsweredAt);
+            })
+            .ToArray();
+    }
 }

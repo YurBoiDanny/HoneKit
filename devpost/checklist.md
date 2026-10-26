@@ -79,7 +79,7 @@ Build mode: fast (chosen before slice 1; learner checks at the planned checkpoin
   Learner check: Upload the real brief and compare the parse to what you'd have written by hand. Is the draft close enough to edit rather than rewrite, and are the outside-role items obvious without thinking?
   Commit: `Parse a meeting brief into editable requirements`
 
-- [ ] **8. The brief becomes a roster**
+- [x] **8. The brief becomes a roster**
   Becomes usable: Confirmed requirements become ranked crew suggestions with a reason per person. Switching between critical, balanced and develop changes the order and says what each costs. A hand-picked override is marked as below requirement, never blocked. Gaps offer one-action deck assignment, a quiet-but-strong member is surfaced for a refresher, and the plan saves and reopens with its document.
   Why now: Recommendations need requirements (slice 7) plus the roster and progress reads already built, and this is where the leader loop closes. It is also the most parallel-ready, rule-only piece, so it lands once the contracts it reads have settled.
   PRD ref: `prd.md > Meeting requirements and recommendations` (recommendations, three strategies, hand-picking, gaps become work, sustain, saved plans), `prd.md > Non-Goals` (no ranking of people)
@@ -134,3 +134,4 @@ Activity mode:
 
 - Frontend published as a hand-written nginx image instead of `PublishAsStaticWebsite` — the Aspire static-website publisher reverse-proxies only one backend, and this app has five services the browser must reach. The spec's documented fallback applies: only the frontend is ejected; the five .NET services still come from the generated compose, and the AppHost stays the single model.
 - A completed deck grants its tool even when first-try accuracy is below the 80% pass line — otherwise the scripted one-wrong run on a four-card deck (75%) could never produce the tool drop the demo depends on. Pass stays the quality label, honed stays ≥90%, and leaving early grants nothing.
+- Seeded a small `Switching Essentials` deck so the switching gap has something to send in one action. The original single framing deck left "gaps become work" with no deck to assign.

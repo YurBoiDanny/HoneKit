@@ -7,6 +7,10 @@ export interface AcknowledgeRequest {
   skillId: string;
 }
 
+export interface AssignDeckRequest {
+  memberIds: string[];
+}
+
 export interface AttemptRequest {
   cardId: string;
   answer: string;
@@ -136,9 +140,25 @@ export interface MemberDto {
   lastActiveAt: string | null;
 }
 
+export interface MemberProgressDto {
+  memberId: string;
+  skills: SkillProgressDto[];
+}
+
 export interface NextCardDto {
   cardId: string | null;
   remaining: number;
+}
+
+export interface OverrideCheckRequest {
+  requirementId: string;
+  memberIds: string[];
+}
+
+export interface OverrideWarningDto {
+  memberId: string;
+  name: string;
+  warnings: string[];
 }
 
 export interface ParseFailureDto {
@@ -148,8 +168,66 @@ export interface ParseFailureDto {
   errors: string[];
 }
 
+export interface PlanDto {
+  id: string;
+  requirementId: string;
+  strategy: string;
+  createdAt: string;
+  members: PlanMemberDto[];
+  gaps: RecommendationGapDto[];
+}
+
+export interface PlanMemberDto {
+  memberId: string;
+  name: string;
+  atLevel: boolean;
+  warnings: string[];
+}
+
+export interface PlanSummaryDto {
+  id: string;
+  requirementId: string;
+  purpose: string;
+  strategy: string;
+  createdAt: string;
+  memberCount: number;
+}
+
 export interface PreferencesRequest {
   showAnswerOnWrong: boolean;
+}
+
+export interface RecommendationDto {
+  requirementId: string;
+  strategy: string;
+  coverage: number;
+  suggestions: RecommendedMemberDto[];
+  gaps: RecommendationGapDto[];
+  sustain: SustainDto[];
+}
+
+export interface RecommendationGapDto {
+  skillId: string;
+  name: string;
+  deckId: string | null;
+  shortfall: number;
+  suggestedMemberIds: string[];
+}
+
+export interface RecommendationRequest {
+  requirementId: string;
+  strategy: string;
+}
+
+export interface RecommendedMemberDto {
+  memberId: string;
+  name: string;
+  colour: string;
+  style: string;
+  worn: boolean;
+  readiness: number;
+  reasons: string[];
+  warnings: string[];
 }
 
 export interface RectDto {
@@ -198,6 +276,12 @@ export interface RequirementSummaryDto {
   confirmedAt: string | null;
 }
 
+export interface SavePlanRequest {
+  requirementId: string;
+  strategy: string;
+  memberIds: string[];
+}
+
 export interface SessionDto {
   id: string;
   memberId: string;
@@ -225,9 +309,24 @@ export interface SkillDto {
   lessonCount: number;
 }
 
+export interface SkillProgressDto {
+  skillId: string;
+  name: string;
+  completedLessons: number;
+  totalLessons: number;
+  percent: number;
+  lastAnsweredAt: string | null;
+}
+
 export interface StartSessionRequest {
   memberId: string;
   deckId: string;
+}
+
+export interface SustainDto {
+  memberId: string;
+  name: string;
+  reason: string;
 }
 
 export interface TeamBagDto {

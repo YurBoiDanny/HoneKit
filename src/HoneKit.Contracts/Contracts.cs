@@ -143,6 +143,80 @@ public sealed record ParseFailureDto(
     string SourceText,
     IReadOnlyList<string> Errors);
 
+// ---- recommendations --------------------------------------------------------------------
+
+public sealed record SkillProgressDto(
+    string SkillId,
+    string Name,
+    int CompletedLessons,
+    int TotalLessons,
+    double Percent,
+    DateTimeOffset? LastAnsweredAt);
+
+public sealed record MemberProgressDto(string MemberId, IReadOnlyList<SkillProgressDto> Skills);
+
+public sealed record RecommendationRequest(string RequirementId, string Strategy);
+
+public sealed record RecommendedMemberDto(
+    string MemberId,
+    string Name,
+    string Colour,
+    string Style,
+    bool Worn,
+    double Readiness,
+    IReadOnlyList<string> Reasons,
+    IReadOnlyList<string> Warnings);
+
+public sealed record RecommendationGapDto(
+    string SkillId,
+    string Name,
+    string? DeckId,
+    int Shortfall,
+    IReadOnlyList<string> SuggestedMemberIds);
+
+public sealed record AssignDeckRequest(IReadOnlyList<string> MemberIds);
+
+public sealed record SustainDto(string MemberId, string Name, string Reason);
+
+public sealed record RecommendationDto(
+    string RequirementId,
+    string Strategy,
+    double Coverage,
+    IReadOnlyList<RecommendedMemberDto> Suggestions,
+    IReadOnlyList<RecommendationGapDto> Gaps,
+    IReadOnlyList<SustainDto> Sustain);
+
+public sealed record OverrideCheckRequest(string RequirementId, IReadOnlyList<string> MemberIds);
+
+public sealed record OverrideWarningDto(string MemberId, string Name, IReadOnlyList<string> Warnings);
+
+public sealed record SavePlanRequest(
+    string RequirementId,
+    string Strategy,
+    IReadOnlyList<string> MemberIds);
+
+public sealed record PlanMemberDto(
+    string MemberId,
+    string Name,
+    bool AtLevel,
+    IReadOnlyList<string> Warnings);
+
+public sealed record PlanDto(
+    string Id,
+    string RequirementId,
+    string Strategy,
+    DateTimeOffset CreatedAt,
+    IReadOnlyList<PlanMemberDto> Members,
+    IReadOnlyList<RecommendationGapDto> Gaps);
+
+public sealed record PlanSummaryDto(
+    string Id,
+    string RequirementId,
+    string Purpose,
+    string Strategy,
+    DateTimeOffset CreatedAt,
+    int MemberCount);
+
 // ---- the member loop -------------------------------------------------------------------
 
 public sealed record StartSessionRequest(string MemberId, string DeckId);

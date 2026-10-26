@@ -54,7 +54,16 @@ var requirements = builder.AddProject<Projects.HoneKit_Requirements>("requiremen
     .WithEnvironment("AI__APIKEY", "${AI__APIKEY}");
 
 var recommendations = builder.AddProject<Projects.HoneKit_Recommendations>("recommendations", launchProfileName: "http")
-    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform);
+    .WithVolume("recommendations-data", target: "/home/app", env: "DATA_DIR")
+    .WithContainerBuildOptions(options => options.TargetPlatform = localTargetPlatform)
+    .WithReference(requirements)
+    .WaitFor(requirements)
+    .WithReference(roster)
+    .WaitFor(roster)
+    .WithReference(progress)
+    .WaitFor(progress)
+    .WithReference(content)
+    .WaitFor(content);
 
 // Hand-written nginx image: PublishAsStaticWebsite only proxies one backend, so the frontend is a
 // separate container. The Dockerfile is owned by the frontend agent; this only references its path.
