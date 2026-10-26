@@ -16,9 +16,11 @@ builder.AddDockerComposeEnvironment("compose");
 
 // The one place a model is called. The demo runs on the committed fixture; a live provider is a
 // configuration switch, forwarded to the Requirements container as-is.
+var isPublishMode = builder.ExecutionContext.IsPublishMode;
 var aiProvider = Environment.GetEnvironmentVariable("AI__PROVIDER") ?? "fixture";
 var aiModel = Environment.GetEnvironmentVariable("AI__MODEL") ?? "gpt-5-mini";
 var aiEndpoint = Environment.GetEnvironmentVariable("AI__ENDPOINT") ?? "https://api.openai.com/v1";
+var aiApiKey = Environment.GetEnvironmentVariable("AI__APIKEY") ?? "";
 
 // Aspire 13.6.4 exposes AddProject<T>() (project model V1); there is no AddDotnetProject() in this
 // package. The generated Projects.* metadata classes drive the typed overload for all five services.
@@ -51,7 +53,9 @@ var requirements = builder.AddProject<Projects.HoneKit_Requirements>("requiremen
     .WithEnvironment("AI__PROVIDER", aiProvider)
     .WithEnvironment("AI__MODEL", aiModel)
     .WithEnvironment("AI__ENDPOINT", aiEndpoint)
-    .WithEnvironment("AI__APIKEY", "${AI__APIKEY}");
+    // Publish: leave a placeholder for Docker Compose to resolve, so a key never lands in the YAML.
+    // Run: hand the real key to the local Requirements process.
+    .WithEnvironment("AI__APIKEY", isPublishMode ? "${AI__APIKEY}" : aiApiKey);
 
 var recommendations = builder.AddProject<Projects.HoneKit_Recommendations>("recommendations", launchProfileName: "http")
     .WithVolume("recommendations-data", target: "/home/app", env: "DATA_DIR")
