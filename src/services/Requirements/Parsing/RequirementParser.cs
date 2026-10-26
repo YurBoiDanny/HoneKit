@@ -1,4 +1,5 @@
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Text.Json;
 using HoneKit.Contracts;
 using HoneKit.Requirements.Data;
@@ -53,7 +54,7 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
 
         try
         {
-            var client = CreateClient(settings.Model, settings.Endpoint, settings.ApiKey);
+            var client = CreateClient(settings.Model, settings.Endpoint, settings.ApiKey, settings.Provider is "opencode" or "opencode-go");
 
             var response = await client.GetResponseAsync(
                 "Reply with the single word ready.",
@@ -155,7 +156,7 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
         IChatClient client;
         try
         {
-            client = CreateClient(model, endpoint, apiKey);
+            client = CreateClient(model, endpoint, apiKey, provider is "opencode" or "opencode-go");
         }
         catch (Exception exception)
         {
@@ -239,14 +240,35 @@ public sealed class RequirementParser(IConfiguration configuration, ILogger<Requ
         }
     }
 
-    private static IChatClient CreateClient(string model, string endpoint, string apiKey)
+    private static IChatClient CreateClient(string model, string endpoint, string apiKey, bool openCode)
     {
         var credential = new ApiKeyCredential(string.IsNullOrWhiteSpace(apiKey) ? "ollama" : apiKey);
         var options = new OpenAIClientOptions { Endpoint = new Uri(endpoint) };
 
+        if (openCode)
+        {
+            // OpenCode Go rejects requests without a session id (400 MissingSessionID).
+            var http = new HttpClient(new OpenCodeSessionHandler { InnerHandler = new HttpClientHandler() });
+            options.Transport = new HttpClientPipelineTransport(http);
+        }
+
         return new OpenAIClient(credential, options)
             .GetChatClient(model)
             .AsIChatClient();
+    }
+
+    private sealed class OpenCodeSessionHandler : DelegatingHandler
+    {
+        private static readonly string SessionId = "honekit-" + Guid.NewGuid().ToString("N");
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            request.Headers.TryAddWithoutValidation("x-opencode-session", SessionId);
+            request.Headers.TryAddWithoutValidation("User-Agent", "honekit/0.1");
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 
     private static async Task<ParsedRequirements> AskAsync(
