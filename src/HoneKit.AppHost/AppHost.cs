@@ -17,10 +17,12 @@ builder.AddDockerComposeEnvironment("compose");
 // The one place a model is called. The demo runs on the committed fixture; a live provider is a
 // configuration switch, forwarded to the Requirements container as-is.
 var isPublishMode = builder.ExecutionContext.IsPublishMode;
-var aiProvider = Environment.GetEnvironmentVariable("AI__PROVIDER") ?? "fixture";
-var aiModel = Environment.GetEnvironmentVariable("AI__MODEL") ?? "gpt-5-mini";
-var aiEndpoint = Environment.GetEnvironmentVariable("AI__ENDPOINT") ?? "https://api.openai.com/v1";
-var aiApiKey = Environment.GetEnvironmentVariable("AI__APIKEY") ?? "";
+// Configuration includes environment variables (AI__X -> AI:X) and, in Development,
+// the AppHost's user secrets. `aspire run` is the dev loop; `aspire deploy` is Production.
+var aiProvider = builder.Configuration["AI:PROVIDER"] ?? "fixture";
+var aiModel = builder.Configuration["AI:MODEL"] ?? "gpt-5-mini";
+var aiEndpoint = builder.Configuration["AI:ENDPOINT"] ?? "https://api.openai.com/v1";
+var aiApiKey = builder.Configuration["AI:APIKEY"] ?? "";
 
 // Aspire 13.6.4 exposes AddProject<T>() (project model V1); there is no AddDotnetProject() in this
 // package. The generated Projects.* metadata classes drive the typed overload for all five services.
